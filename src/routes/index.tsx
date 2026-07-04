@@ -29,19 +29,19 @@ function Index() {
           style={{ backgroundImage: `url(${heroBanner.url})` }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-55" aria-hidden />
+        <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-30" aria-hidden />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" aria-hidden />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-24">
-          <div className="flex items-start gap-6">
+          <div className="flex items-center justify-center gap-6">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7 }}
               className="hidden sm:block shrink-0"
             >
-              <img src={aicdaLogo} alt="AICDA India logo" className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-full bg-white/90 p-2 ring-4 ring-white/40" />
+              {/* <img src={aicdaLogo} alt="AICDA India logo" className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] rounded-full bg-white/90 p-2 ring-4 ring-white/40" /> */}
             </motion.div>
-            <div className="max-w-2xl">
+            <div className="max-w-4xl flex flex-col items-center text-center">
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ function Index() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.25 }}
-                className="mt-5 text-base sm:text-lg opacity-90 max-w-xl leading-relaxed"
+                className="mt-5 text-base sm:text-lg font-semibold opacity-90 max-w-xl leading-relaxed"
               >
                 Uniting India's automobile dealers under a single professional banner — advancing fair trade, transparent transfers and modern retail standards from Kashmir to Kanyakumari.
               </motion.p>
@@ -71,7 +71,7 @@ function Index() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.35 }}
-                className="mt-8 flex flex-wrap gap-3"
+                className="mt-8 flex flex-wrap justify-center gap-3"
               >
                 <Link to="/about" className="px-6 py-3 rounded-lg bg-primary-foreground text-primary font-bold shadow-[var(--shadow-elegant)] hover:scale-[1.03] transition">
                   About the Association
@@ -119,7 +119,7 @@ function Index() {
   
 President</h3>
 
-<h4>Phone: 27487652<br/>
+<h4>Phone:9818691000<br/>
 Mobile: 9818691000,9810027829</h4>
 
               </div>
