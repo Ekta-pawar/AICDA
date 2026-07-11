@@ -1,0 +1,32 @@
+export const primaryNav = [
+  { label: "Home", to: "/" },
+  { label: "Association Events", to: "/association-events" },
+  { label: "Political Achievements", to: "/political-achievements" },
+  { label: "Image", to: "/image" },
+  { label: "Management", to: "/management" },
+  { label: "Directory", to: "/directory" },
+  { label: "Letter", to: "/letter" },
+  { label: "About Us", to: "/about" },
+  { label: "Contact Us", to: "/contact" },
+];
+
+export const categoryNav = [
+  { label: "Rules", to: "/categories/rules" },
+  { label: "Transfer Fees", to: "/categories/transfer-fees" },
+  { label: "Transfer Ownership", to: "/categories/transfer-ownership" },
+  { label: "Vehicle Safety", to: "/categories/vehicle-safety" },
+  { label: "Important Forms", to: "/categories/important-forms" },
+  { label: "Information on Forms", to: "/categories/information-on-forms" },
+  { label: "Used Vehicle Checklist", to: "/categories/used-vehicle-checklist" },
+  { label: "Fees Structure", to: "/categories/fees-structure" },
+  { label: "Obtain N.O.C.", to: "/categories/obtain-noc" },
+  { label: "Duplicate R.C.", to: "/categories/duplicate-rc" },
+  { label: "New Vehicle", to: "/categories/new-vehicle" },
+  { label: "Other State Vehicle", to: "/categories/other-state-vehicle" },
+  { label: "New Registrations", to: "/categories/new-registrations" },
+  { label: "EMI Calculator", to: "/categories/emi-calculator" },
+  { label: "RTO List", to: "/categories/rto-list" },
+  { label: "Authorized Dealers", to: "/categories/authorized-dealers" },
+  { label: "News", to: "/categories/news" },
+  { label: "Our Office", to: "/categories/our-office" },
+];
