@@ -24,7 +24,7 @@ function Page() {
               <h2 className="text-3xl font-black text-foreground mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Search the Directory</h2>
           
       </Prose>
-<div className="mt-6">
+<div className="overflow-x-auto scrollbar-hide mt-6 h-180">
       <div className="mt-6">
         <img src={maneg1} alt="AICDA Management" className="h-auto w-full max-w-none rounded-xl border border-border shadow-[var(--shadow-card)]" />
       </div>
