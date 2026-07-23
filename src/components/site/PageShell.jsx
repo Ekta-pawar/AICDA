@@ -23,7 +23,7 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
-      <section className="relative overflow-hidden text-primary-foreground min-h-[420px] sm:min-h-[520px] flex items-center">
+      <section className="relative flex min-h-[420px] items-center overflow-hidden text-primary-foreground sm:min-h-[520px]">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${bg})` }}
@@ -31,7 +31,7 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
         />
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-25" aria-hidden />
         <div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent" aria-hidden />
-        <div className="relative mx-auto flex max-w-7xl w-full flex-col items-center gap-6 px-4 py-16 text-center sm:py-24">
+        <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-6 px-4 py-14 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <motion.h1
             initial={{ opacity: 0, y: 20, rotateX: -20 }}
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
@@ -53,15 +53,15 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
           )}
         </div>
       </section>
-      <main className="mx-auto max-w-7xl w-full px-4 py-10 flex-1">
-        <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+        <div className="grid gap-6 lg:grid-cols-[16rem_1fr] lg:gap-8">
           {!hideSidebar && <Sidebar />}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6 }}
-            className={hideSidebar ? "lg:col-span-2" : ""}
+            className={`w-full ${hideSidebar ? "lg:col-span-2" : ""}`}
           >
             {children}
           </motion.div>

@@ -3,8 +3,8 @@ import { primaryNav } from "./nav-data";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-20 bg-primary-deep text-primary-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-12 grid gap-10 md:grid-cols-3">
+    <footer className="mt-16 bg-primary-deep text-primary-foreground sm:mt-20">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 md:grid-cols-3 md:gap-10">
         <div>
           <h3
             className="text-xl font-black mb-3"
@@ -45,7 +45,7 @@ export function SiteFooter() {
           </address>
         </div>
       </div>
-      <div className="border-t border-primary-foreground/15 py-4 text-center text-xs opacity-70">
+      <div className="border-t border-primary-foreground/15 px-4 py-4 text-center text-xs opacity-70 sm:px-6 lg:px-8">
         © {new Date().getFullYear()} All India Car Dealers Association. All rights reserved.
       </div>
     </footer>
