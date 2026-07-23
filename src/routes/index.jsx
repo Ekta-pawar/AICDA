@@ -31,8 +31,8 @@ function Index() {
         />
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-30" aria-hidden />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:py-24">
-          <div className="flex items-center justify-center gap-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24">
+          <div className="flex items-center justify-center gap-6 px-4 sm:px-0">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -85,7 +85,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 -mt-10 relative z-10">
+      <section className="mx-auto max-w-7xl px-4 -mt-10  relative z-10">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f, i) => (
             <motion.div
@@ -109,8 +109,8 @@ function Index() {
           <Sidebar />
           <div className="space-y-10">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-              <h2 className="text-3xl font-black text-foreground mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Welcome to AICDA</h2>
-              <div className="text-foreground/80 leading-relaxed">
+              <h2 className="text-3xl font-black text-foreground mb-6 px-2 sm:px-2" style={{ fontFamily: "'Playfair Display', serif" }}>Welcome to AICDA</h2>
+              <div className="text-foreground/80 leading-relaxed px-2 sm:px-2">
 <h4 className="mb-[9px] font-bold">
   Dear Member,
 </h4>

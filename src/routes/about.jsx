@@ -18,8 +18,8 @@ function Page() {
   return (
     <PageShell title="About Us" subtitle="The story, mission and values of the All India Car Dealers Association.">
       <Prose>
-          <h2 className="mt-[0px],">Our Journey</h2>
-          <p>The Trade of car Sale Purchase is as old as the invention of the Motor car itself. With due course of time it has developed into a full fledged trade and industry. From time to time the people involved in this trade had been trying to organise themselves and form an association which could look after the requirements of the dealers and help them in their hour of need.
+          <h2 className="mt-[0px] px-2 sm:px-2,">Our Journey</h2>
+          <p className="px-2 sm:px-2">The Trade of car Sale Purchase is as old as the invention of the Motor car itself. With due course of time it has developed into a full fledged trade and industry. From time to time the people involved in this trade had been trying to organise themselves and form an association which could look after the requirements of the dealers and help them in their hour of need.
 
 In the year 2001 the Car Sale Purchase dealers of North district of Delhi were facing problems from many angles and hence decided it was high time that an Association be formed. The dealers gathered ,met and formed an Association. The complete charge of the Association was handed over to a dynamic personality by the name of J.S.NAYOL who named the Association as NORTHWEST CAR DEALERS ASSOCIATION.
 
