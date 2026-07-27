@@ -17,29 +17,36 @@ export const Route = createFileRoute("/letter")({
   head: () => ({
     meta: [
       { title: "Letters & Circulars · AICDA" },
-      { name: "description", content: "Official correspondence, member circulars and government representations." },
+      {
+        name: "description",
+        content: "Official correspondence, member circulars and government representations.",
+      },
       { property: "og:title", content: "Letters & Circulars · AICDA" },
-      { property: "og:description", content: "Official correspondence, member circulars and government representations." },
+      {
+        property: "og:description",
+        content: "Official correspondence, member circulars and government representations.",
+      },
     ],
   }),
   component: Page,
 });
 
-const LETTERS = [letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8].map((src, i) => ({
-  src,
-  label: `Letter of Association ${i + 1}`,
-}));
+const LETTERS = [letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8].map(
+  (src, i) => ({
+    src,
+    label: `Letter of Association ${i + 1}`,
+  }),
+);
 
 function Page() {
   const [openIndex, setOpenIndex] = useState(null);
   const current = openIndex !== null ? LETTERS[openIndex] : null;
 
   return (
-    <PageShell title="Letters & Circulars" subtitle="Official correspondence, member circulars and government representations.">
-  
-      
-     
-
+    <PageShell
+      title="Letters & Circulars"
+      subtitle="Official correspondence, member circulars and government representations."
+    >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
         {LETTERS.map((letter, i) => (
           <button
@@ -65,13 +72,21 @@ function Page() {
           <DialogTitle className="sr-only">{current?.label ?? "Letter"}</DialogTitle>
           {current && (
             <div className="relative">
-              <img src={current.src} alt={current.label} className="max-h-[80vh] w-full object-contain bg-black" />
+              <img
+                src={current.src}
+                alt={current.label}
+                className="max-h-[80vh] w-full object-contain bg-black"
+              />
               {LETTERS.length > 1 && (
                 <>
                   <button
                     type="button"
                     aria-label="Previous letter"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i - 1 + LETTERS.length) % LETTERS.length))}
+                    onClick={() =>
+                      setOpenIndex((i) =>
+                        i === null ? i : (i - 1 + LETTERS.length) % LETTERS.length,
+                      )
+                    }
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -94,6 +109,5 @@ function Page() {
         </DialogContent>
       </Dialog>
     </PageShell>
-  
   );
 }

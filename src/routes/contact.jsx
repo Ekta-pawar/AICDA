@@ -19,9 +19,7 @@ function Page() {
     <PageShell title="Contact Us" subtitle="Get in touch with the AICDA secretariat.">
       <Prose>
         <h2 className="px-2 sm:px-2">Head Office</h2>
-        <p className="px-2 sm:px-2">
-          CB-32B, OPP. RBI COLONY, SHALIMAR BAGH, Delhi-110088
-        </p>
+        <p className="px-2 sm:px-2">CB-32B, OPP. RBI COLONY, SHALIMAR BAGH, Delhi-110088</p>
         <p className="px-2 sm:px-2">Phone: 9818691000, 9810027829, 8587036564, 8595288016</p>
       </Prose>
       <div className="overflow-hidden rounded-xl border border-border shadow-(--shadow-card)">

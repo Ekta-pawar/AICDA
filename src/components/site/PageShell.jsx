@@ -33,7 +33,7 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
         <div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent" aria-hidden />
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-6 px-4 py-14 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <motion.h1
-            initial={{ opacity: 0, y: 20, rotateX: -20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0, rotateX: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
             style={{ fontFamily: "'Playfair Display', serif", transformStyle: "preserve-3d" }}
@@ -43,7 +43,7 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
           </motion.h1>
           {subtitle && (
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 0.9, y: 0 }}
               transition={{ duration: 0.7, delay: 0.15 }}
               className="max-w-2xl text-base sm:text-lg opacity-90"
@@ -57,7 +57,7 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
         <div className="grid gap-6 lg:grid-cols-[16rem_1fr] lg:gap-8">
           {!hideSidebar && <Sidebar />}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6 }}

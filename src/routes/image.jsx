@@ -14,9 +14,15 @@ export const Route = createFileRoute("/image")({
   head: () => ({
     meta: [
       { title: "Image Gallery · AICDA" },
-      { name: "description", content: "A visual record of AICDA conventions, meetings and dealer felicitations." },
+      {
+        name: "description",
+        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
+      },
       { property: "og:title", content: "Image Gallery · AICDA" },
-      { property: "og:description", content: "A visual record of AICDA conventions, meetings and dealer felicitations." },
+      {
+        property: "og:description",
+        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
+      },
     ],
   }),
   component: Page,
@@ -32,7 +38,10 @@ function Page() {
   const current = openIndex !== null ? GALLERY[openIndex] : null;
 
   return (
-    <PageShell title="Image Gallery" subtitle="A visual record of AICDA conventions, meetings and dealer felicitations.">
+    <PageShell
+      title="Image Gallery"
+      subtitle="A visual record of AICDA conventions, meetings and dealer felicitations."
+    >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
         {GALLERY.map((photo, i) => (
           <button
@@ -58,13 +67,21 @@ function Page() {
           <DialogTitle className="sr-only">{current?.label ?? "Photo"}</DialogTitle>
           {current && (
             <div className="relative">
-              <img src={current.src} alt={current.label} className="max-h-[80vh] w-full object-contain bg-black" />
+              <img
+                src={current.src}
+                alt={current.label}
+                className="max-h-[80vh] w-full object-contain bg-black"
+              />
               {GALLERY.length > 1 && (
                 <>
                   <button
                     type="button"
                     aria-label="Previous photo"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length))}
+                    onClick={() =>
+                      setOpenIndex((i) =>
+                        i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length,
+                      )
+                    }
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
                   >
                     <ChevronLeft className="h-6 w-6" />

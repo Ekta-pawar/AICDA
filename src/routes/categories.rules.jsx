@@ -15,9 +15,15 @@ export const Route = createFileRoute("/categories/rules")({
   head: () => ({
     meta: [
       { title: "Rules · AICDA" },
-      { name: "description", content: "Central Motor Vehicles Rules and dealer-specific compliance summarised." },
+      {
+        name: "description",
+        content: "Central Motor Vehicles Rules and dealer-specific compliance summarised.",
+      },
       { property: "og:title", content: "Rules · AICDA" },
-      { property: "og:description", content: "Central Motor Vehicles Rules and dealer-specific compliance summarised." },
+      {
+        property: "og:description",
+        content: "Central Motor Vehicles Rules and dealer-specific compliance summarised.",
+      },
     ],
   }),
   component: Page,
@@ -48,7 +54,10 @@ function Page() {
   const currentParagraphs = paragraphs.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <PageShell title="Rules" subtitle="Central Motor Vehicles Rules and dealer-specific compliance summarised.">
+    <PageShell
+      title="Rules"
+      subtitle="Central Motor Vehicles Rules and dealer-specific compliance summarised."
+    >
       <div className="px-4 sm:px-6">
         <Prose className="break-words">
           <h2>About Rules</h2>

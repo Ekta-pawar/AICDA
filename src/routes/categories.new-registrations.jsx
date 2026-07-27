@@ -6,9 +6,15 @@ export const Route = createFileRoute("/categories/new-registrations")({
   head: () => ({
     meta: [
       { title: "New Registrations · AICDA" },
-      { name: "description", content: "Latest new vehicle registration statistics compiled by AICDA." },
+      {
+        name: "description",
+        content: "Latest new vehicle registration statistics compiled by AICDA.",
+      },
       { property: "og:title", content: "New Registrations · AICDA" },
-      { property: "og:description", content: "Latest new vehicle registration statistics compiled by AICDA." },
+      {
+        property: "og:description",
+        content: "Latest new vehicle registration statistics compiled by AICDA.",
+      },
     ],
   }),
   component: Page,
@@ -16,36 +22,35 @@ export const Route = createFileRoute("/categories/new-registrations")({
 
 function Page() {
   return (
-    <PageShell title="New Registrations" subtitle="Latest new vehicle registration statistics compiled by AICDA.">
+    <PageShell
+      title="New Registrations"
+      subtitle="Latest new vehicle registration statistics compiled by AICDA."
+    >
       <Prose>
-          <h2>About New Registrations</h2>
-          <hr/>
-          <br/>
-          <ol>
-            <li>1. Verification of vehicles in form No.20</li>
+        <h2>About New Registrations</h2>
+        <hr />
+        <br />
+        <ol>
+          <li>1. Verification of vehicles in form No.20</li>
 
-<li>Sale Letter Form No.21</li>
+          <li>Sale Letter Form No.21</li>
 
-<li>Manufacturers Fitness Certificate
-</li>
-<li> Form No.22</li>
+          <li>Manufacturers Fitness Certificate</li>
+          <li> Form No.22</li>
 
-<li>Pollution Certificate</li>
+          <li>Pollution Certificate</li>
 
-<li>Insurance</li>
-<li>Residence Proof</li>
+          <li>Insurance</li>
+          <li>Residence Proof</li>
 
-<li>On time Tax</li>
+          <li>On time Tax</li>
 
-<li>Registration Fee</li> 
+          <li>Registration Fee</li>
 
-<li>If Vehicle is from other state temporary registration Certificate
-
-</li>
-
-          </ol>
-          <hr/>
-<br/>
+          <li>If Vehicle is from other state temporary registration Certificate</li>
+        </ol>
+        <hr />
+        <br />
       </Prose>
     </PageShell>
   );

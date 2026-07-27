@@ -9,9 +9,15 @@ export const Route = createFileRoute("/directory")({
   head: () => ({
     meta: [
       { title: "Dealer Directory · AICDA" },
-      { name: "description", content: "Verified new & used car dealers across India — searchable by state and city." },
+      {
+        name: "description",
+        content: "Verified new & used car dealers across India — searchable by state and city.",
+      },
       { property: "og:title", content: "Dealer Directory · AICDA" },
-      { property: "og:description", content: "Verified new & used car dealers across India — searchable by state and city." },
+      {
+        property: "og:description",
+        content: "Verified new & used car dealers across India — searchable by state and city.",
+      },
     ],
   }),
   component: Page,
@@ -19,27 +25,44 @@ export const Route = createFileRoute("/directory")({
 
 function Page() {
   return (
-    <PageShell title="Dealer Directory" subtitle="Verified new & used car dealers across India — searchable by state and city.">
+    <PageShell
+      title="Dealer Directory"
+      subtitle="Verified new & used car dealers across India — searchable by state and city."
+    >
       <Prose>
-              <h2 className="text-3xl font-black text-foreground mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>Search the Directory</h2>
-          
+        <h2
+          className="text-3xl font-black text-foreground mb-6"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Search the Directory
+        </h2>
       </Prose>
-<div className="overflow-x-auto scrollbar-hide mt-6 h-180">
-      <div className="mt-6">
-        <img src={maneg1} alt="AICDA Management" className="h-auto w-full max-w-none rounded-xl border border-border shadow-[var(--shadow-card)]" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-        <div className="">
-        <img src={member2} alt="AICDA Member" className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover " />
+      <div className="overflow-x-auto scrollbar-hide mt-6 h-180">
+        <div className="mt-6">
+          <img
+            src={maneg1}
+            alt="AICDA Management"
+            className="h-auto w-full max-w-none rounded-xl border border-border shadow-[var(--shadow-card)]"
+          />
         </div>
-        <div className="overflow-x-auto scrollbar-hide mt-6 h-85">
-        <img src={memberAICDA2} alt="AICDA Member" className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover" />
-      </div>
-      </div>
-      </div>
-      
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+          <div className="">
+            <img
+              src={member2}
+              alt="AICDA Member"
+              className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover "
+            />
+          </div>
+          <div className="overflow-x-auto scrollbar-hide mt-6 h-85">
+            <img
+              src={memberAICDA2}
+              alt="AICDA Member"
+              className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover"
+            />
+          </div>
+        </div>
+      </div>
     </PageShell>
   );
 }

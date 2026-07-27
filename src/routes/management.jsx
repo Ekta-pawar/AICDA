@@ -43,7 +43,8 @@ const OFFICE_BEARERS = [
     designation: "",
     name: "KARTIKAY AHUJA",
     sOf: "SH ASHOK AHUJA",
-    officeAddress: "MAIN ROAD SCHEME NO-3,NEAR SHRI GURU HARI KISHAN PUBLIC SCHOOL ALWAR RAJASTHAN -301001",
+    officeAddress:
+      "MAIN ROAD SCHEME NO-3,NEAR SHRI GURU HARI KISHAN PUBLIC SCHOOL ALWAR RAJASTHAN -301001",
     city: "Alwar",
     state: "Rajasthan",
     companyTel: "",
@@ -58,7 +59,8 @@ const OFFICE_BEARERS = [
     designation: " PRESIDENT-ALWAR",
     name: "ROHITASH",
     sOf: "SH.CHAGAN LAL",
-    officeAddress: " MAIN ROAD, SCHEME NO-3, NEAR SHRI GURU HARI KISHAN PUBLIC SCHOOL- ALWAR RAJASTHAN",
+    officeAddress:
+      " MAIN ROAD, SCHEME NO-3, NEAR SHRI GURU HARI KISHAN PUBLIC SCHOOL- ALWAR RAJASTHAN",
     city: "ALWAR",
     state: "Rajasthan",
     companyTel: "",

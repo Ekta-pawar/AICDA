@@ -18,27 +18,47 @@ export const Route = createFileRoute("/political-achievements")({
   head: () => ({
     meta: [
       { title: "Political Achievements · AICDA" },
-      { name: "description", content: "Two and a half decades of policy advocacy that reshaped the Indian dealer landscape." },
+      {
+        name: "description",
+        content:
+          "Two and a half decades of policy advocacy that reshaped the Indian dealer landscape.",
+      },
       { property: "og:title", content: "Political Achievements · AICDA" },
-      { property: "og:description", content: "Two and a half decades of policy advocacy that reshaped the Indian dealer landscape." },
+      {
+        property: "og:description",
+        content:
+          "Two and a half decades of policy advocacy that reshaped the Indian dealer landscape.",
+      },
     ],
   }),
   component: Page,
 });
 
-const ACHIEVEMENTS = [public1, public2, public3, public4, public5, public6, public7, public9, public10, public11].map(
-  (src, i) => ({
-    src,
-    label: `Political Achievement ${i + 1}`,
-  })
-);
+const ACHIEVEMENTS = [
+  public1,
+  public2,
+  public3,
+  public4,
+  public5,
+  public6,
+  public7,
+  public9,
+  public10,
+  public11,
+].map((src, i) => ({
+  src,
+  label: `Political Achievement ${i + 1}`,
+}));
 
 function Page() {
   const [openIndex, setOpenIndex] = useState(null);
   const current = openIndex !== null ? ACHIEVEMENTS[openIndex] : null;
 
   return (
-    <PageShell title="Political Achievements" subtitle="Two and a half decades of policy advocacy that reshaped the Indian dealer landscape.">
+    <PageShell
+      title="Political Achievements"
+      subtitle="Two and a half decades of policy advocacy that reshaped the Indian dealer landscape."
+    >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
         {ACHIEVEMENTS.map((item, i) => (
           <button
@@ -64,13 +84,21 @@ function Page() {
           <DialogTitle className="sr-only">{current?.label ?? "Achievement"}</DialogTitle>
           {current && (
             <div className="relative">
-              <img src={current.src} alt={current.label} className="max-h-[80vh] w-full object-contain bg-black" />
+              <img
+                src={current.src}
+                alt={current.label}
+                className="max-h-[80vh] w-full object-contain bg-black"
+              />
               {ACHIEVEMENTS.length > 1 && (
                 <>
                   <button
                     type="button"
                     aria-label="Previous achievement"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i - 1 + ACHIEVEMENTS.length) % ACHIEVEMENTS.length))}
+                    onClick={() =>
+                      setOpenIndex((i) =>
+                        i === null ? i : (i - 1 + ACHIEVEMENTS.length) % ACHIEVEMENTS.length,
+                      )
+                    }
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -78,7 +106,9 @@ function Page() {
                   <button
                     type="button"
                     aria-label="Next achievement"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i + 1) % ACHIEVEMENTS.length))}
+                    onClick={() =>
+                      setOpenIndex((i) => (i === null ? i : (i + 1) % ACHIEVEMENTS.length))
+                    }
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
                   >
                     <ChevronRight className="h-6 w-6" />

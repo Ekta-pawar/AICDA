@@ -20,27 +20,47 @@ export const Route = createFileRoute("/association-events")({
   head: () => ({
     meta: [
       { title: "Association Events · AICDA" },
-      { name: "description", content: "National conventions, regional meets and skill workshops organised by AICDA." },
+      {
+        name: "description",
+        content: "National conventions, regional meets and skill workshops organised by AICDA.",
+      },
       { property: "og:title", content: "Association Events · AICDA" },
-      { property: "og:description", content: "National conventions, regional meets and skill workshops organised by AICDA." },
+      {
+        property: "og:description",
+        content: "National conventions, regional meets and skill workshops organised by AICDA.",
+      },
     ],
   }),
   component: Page,
 });
 
-const EVENTS = [event1, event2, event3, event4, event5, event6, event7, event8, event9, event10, event11, event12].map(
-  (src, i) => ({
-    src,
-    label: `Association Event ${i + 1}`,
-  })
-);
+const EVENTS = [
+  event1,
+  event2,
+  event3,
+  event4,
+  event5,
+  event6,
+  event7,
+  event8,
+  event9,
+  event10,
+  event11,
+  event12,
+].map((src, i) => ({
+  src,
+  label: `Association Event ${i + 1}`,
+}));
 
 function Page() {
   const [openIndex, setOpenIndex] = useState(null);
   const current = openIndex !== null ? EVENTS[openIndex] : null;
 
   return (
-    <PageShell title="Association Events" subtitle="National conventions, regional meets and skill workshops organised by AICDA.">
+    <PageShell
+      title="Association Events"
+      subtitle="National conventions, regional meets and skill workshops organised by AICDA."
+    >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
         {EVENTS.map((event, i) => (
           <button
@@ -66,13 +86,21 @@ function Page() {
           <DialogTitle className="sr-only">{current?.label ?? "Event"}</DialogTitle>
           {current && (
             <div className="relative">
-              <img src={current.src} alt={current.label} className="max-h-[80vh] w-full object-contain bg-black" />
+              <img
+                src={current.src}
+                alt={current.label}
+                className="max-h-[80vh] w-full object-contain bg-black"
+              />
               {EVENTS.length > 1 && (
                 <>
                   <button
                     type="button"
                     aria-label="Previous event"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i - 1 + EVENTS.length) % EVENTS.length))}
+                    onClick={() =>
+                      setOpenIndex((i) =>
+                        i === null ? i : (i - 1 + EVENTS.length) % EVENTS.length,
+                      )
+                    }
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
                   >
                     <ChevronLeft className="h-6 w-6" />
