@@ -1,108 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
 import { PageShell } from "@/components/site/PageShell";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import gallery1 from "@/assets/AICDA1-2023.webp";
-import gallery2 from "@/assets/AICDA22.webp";
-import gallery3 from "@/assets/AICDA33.webp";
-import gallery4 from "@/assets/AICDA4.webp";
-import gallery5 from "@/assets/AICDA5.webp";
-import gallery6 from "@/assets/AICDA7.webp";
+import { getGalleryImages } from "@/lib/gallery-api";
 
 export const Route = createFileRoute("/image")({
-  head: () => ({
-    meta: [
-      { title: "Image Gallery · AICDA" },
-      {
-        name: "description",
-        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
-      },
-      { property: "og:title", content: "Image Gallery · AICDA" },
-      {
-        property: "og:description",
-        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
-      },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Image Gallery · AICDA" }, { name: "description", content: "A visual record of AICDA conventions, meetings and dealer felicitations." }] }),
   component: Page,
 });
 
-const GALLERY = [gallery1, gallery2, gallery3, gallery4, gallery5, gallery6].map((src, i) => ({
-  src,
-  label: `Gallery Photo ${i + 1}`,
-}));
+const CATEGORIES = [
+  ["ASSOCIATION", "Association"],
+  ["POLITICAL_ACHIEVEMENT", "Political Achievement"],
+  ["IMAGE", "Image"],
+  ["DIRECTORY", "Directory"],
+  ["LETTER", "Letter"],
+];
+const PAGE_SIZE = 12;
+
+function imageUrl(image) {
+  return image.imageUrl || image.url || image.secure_url || image.image?.url || image.image?.secure_url;
+}
 
 function Page() {
+  const [category, setCategory] = useState("IMAGE");
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
-  const current = openIndex !== null ? GALLERY[openIndex] : null;
 
-  return (
-    <PageShell
-      title="Image Gallery"
-      subtitle="A visual record of AICDA conventions, meetings and dealer felicitations."
-    >
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
-        {GALLERY.map((photo, i) => (
-          <button
-            key={photo.src}
-            type="button"
-            onClick={() => setOpenIndex(i)}
-            className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)] text-left cursor-pointer"
-          >
-            <img
-              src={photo.src}
-              alt={photo.label}
-              className="aspect-[3/4] h-55 w-full object-contain object-top transition-transform duration-300 group-hover:scale-105"
-            />
-            <span className="absolute inset-x-0 bottom-0 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-2 text-center">
-              {photo.label}
-            </span>
-          </button>
-        ))}
-      </div>
+  const loadImages = async (requestedCategory, requestedPage, append = false) => {
+    append ? setLoadingMore(true) : setLoading(true);
+    setError("");
+    try {
+      const result = await getGalleryImages({ category: requestedCategory, page: requestedPage, limit: PAGE_SIZE });
+      const validImages = result.images.filter((image) => imageUrl(image));
+      setImages((current) => append ? [...current, ...validImages] : validImages);
+      const totalPages = result.pagination.totalPages || result.pagination.pages;
+      setHasMore(typeof result.pagination.hasNextPage === "boolean" ? result.pagination.hasNextPage : totalPages ? requestedPage < totalPages : validImages.length === PAGE_SIZE);
+      setPage(requestedPage);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load gallery images.");
+      if (!append) setImages([]);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
 
-      <Dialog open={openIndex !== null} onOpenChange={(open) => !open && setOpenIndex(null)}>
-        <DialogContent className="max-w-3xl border-none bg-black p-0 overflow-hidden">
-          <DialogTitle className="sr-only">{current?.label ?? "Photo"}</DialogTitle>
-          {current && (
-            <div className="relative">
-              <img
-                src={current.src}
-                alt={current.label}
-                className="max-h-[80vh] w-full object-contain bg-black"
-              />
-              {GALLERY.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Previous photo"
-                    onClick={() =>
-                      setOpenIndex((i) =>
-                        i === null ? i : (i - 1 + GALLERY.length) % GALLERY.length,
-                      )
-                    }
-                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Next photo"
-                    onClick={() => setOpenIndex((i) => (i === null ? i : (i + 1) % GALLERY.length))}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white cursor-pointer hover:bg-black/70"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
-                </>
-              )}
-              <div className="bg-black/80 px-4 py-3 text-center text-sm font-semibold text-white">
-                {current.label}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </PageShell>
-  );
+  useEffect(() => { loadImages(category, 1); }, [category]);
+
+  const changeCategory = (nextCategory) => {
+    setOpenIndex(null);
+    setCategory(nextCategory);
+  };
+  const current = openIndex === null ? null : images[openIndex];
+
+  return <PageShell title="Gallery" subtitle="Browse AICDA photos by category.">
+    <div className="mb-7 flex flex-wrap gap-2" role="tablist" aria-label="Gallery categories">
+      {CATEGORIES.map(([value, label]) => <button key={value} type="button" role="tab" aria-selected={category === value} onClick={() => changeCategory(value)} className={`rounded-full px-4 py-2 text-sm font-semibold transition ${category === value ? "bg-primary text-white" : "border border-border bg-card text-muted-foreground hover:border-primary hover:text-primary"}`}>{label}</button>)}
+    </div>
+
+    {loading ? <div className="flex min-h-64 items-center justify-center gap-2 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 animate-spin" /> Loading gallery…</div> : error ? <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}</div> : images.length === 0 ? <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">No images have been uploaded in this category yet.</div> : <><div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"><>{images.map((photo, index) => <button key={photo.id || photo._id || `${imageUrl(photo)}-${index}`} type="button" onClick={() => setOpenIndex(index)} className="group relative overflow-hidden rounded-xl border border-border bg-card text-left shadow-[var(--shadow-card)]"><img src={imageUrl(photo)} alt={photo.title || `${CATEGORIES.find(([value]) => value === category)?.[1]} photo ${index + 1}`} className="aspect-square h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /><span className="absolute inset-x-0 bottom-0 bg-black/65 px-3 py-2 text-xs font-semibold text-white">{photo.title || "View image"}</span></button>)}</></div>{hasMore && <div className="mt-8 text-center"><button type="button" onClick={() => loadImages(category, page + 1, true)} disabled={loadingMore} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{loadingMore && <LoaderCircle className="h-4 w-4 animate-spin" />}{loadingMore ? "Loading…" : "Load more"}</button></div>}</>}
+
+    <Dialog open={openIndex !== null} onOpenChange={(open) => !open && setOpenIndex(null)}><DialogContent className="max-w-4xl overflow-hidden border-none bg-black p-0"><DialogTitle className="sr-only">{current?.title || "Gallery image"}</DialogTitle>{current && <div className="relative"><img src={imageUrl(current)} alt={current.title || "Gallery image"} className="max-h-[80vh] w-full object-contain" />{images.length > 1 && <><button type="button" aria-label="Previous photo" onClick={() => setOpenIndex((index) => (index - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><ChevronLeft className="h-6 w-6" /></button><button type="button" aria-label="Next photo" onClick={() => setOpenIndex((index) => (index + 1) % images.length)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"><ChevronRight className="h-6 w-6" /></button></>}<p className="bg-black/80 px-4 py-3 text-center text-sm font-semibold text-white">{current.title || "Gallery image"}</p></div>}</DialogContent></Dialog>
+  </PageShell>;
 }

@@ -16,6 +16,7 @@ import { Route as ImageRouteImport } from './routes/image'
 import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AssociationEventsRouteImport } from './routes/association-events'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriesVehicleSafetyRouteImport } from './routes/categories.vehicle-safety'
@@ -36,6 +37,7 @@ import { Route as CategoriesFeesStructureRouteImport } from './routes/categories
 import { Route as CategoriesEmiCalculatorRouteImport } from './routes/categories.emi-calculator'
 import { Route as CategoriesDuplicateRcRouteImport } from './routes/categories.duplicate-rc'
 import { Route as CategoriesAuthorizedDealersRouteImport } from './routes/categories.authorized-dealers'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
 
 const PoliticalAchievementsRoute = PoliticalAchievementsRouteImport.update({
   id: '/political-achievements',
@@ -70,6 +72,11 @@ const ContactRoute = ContactRouteImport.update({
 const AssociationEventsRoute = AssociationEventsRouteImport.update({
   id: '/association-events',
   path: '/association-events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -179,10 +186,16 @@ const CategoriesAuthorizedDealersRoute =
     path: '/categories/authorized-dealers',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
@@ -190,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -212,6 +226,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
@@ -219,6 +234,7 @@ export interface FileRoutesByTo {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -242,6 +258,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
@@ -249,6 +266,7 @@ export interface FileRoutesById {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -273,6 +291,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/association-events'
     | '/contact'
     | '/directory'
@@ -280,6 +299,7 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/login'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -302,6 +322,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admin'
     | '/association-events'
     | '/contact'
     | '/directory'
@@ -309,6 +330,7 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/login'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -331,6 +353,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
     | '/association-events'
     | '/contact'
     | '/directory'
@@ -338,6 +361,7 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/login'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -361,6 +385,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AssociationEventsRoute: typeof AssociationEventsRoute
   ContactRoute: typeof ContactRoute
   DirectoryRoute: typeof DirectoryRoute
@@ -437,6 +462,13 @@ declare module '@tanstack/react-router' {
       path: '/association-events'
       fullPath: '/association-events'
       preLoaderRoute: typeof AssociationEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -579,12 +611,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesAuthorizedDealersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminLoginRoute: typeof AdminLoginRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLoginRoute: AdminLoginRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   AssociationEventsRoute: AssociationEventsRoute,
   ContactRoute: ContactRoute,
   DirectoryRoute: DirectoryRoute,
