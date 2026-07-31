@@ -1,9 +1,8 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/site/PageShell";
 import { Prose } from "@/components/site/ContentBlocks";
-import maneg1 from "@/assets/Member/maneg1.webp";
-import member2 from "@/assets/Member/member2.webp";
-import memberAICDA2 from "@/assets/Member/memberAICDA2.webp";
+import { getGalleryImages } from "@/lib/gallery-api";
 
 export const Route = createFileRoute("/directory")({
   head: () => ({
@@ -11,12 +10,17 @@ export const Route = createFileRoute("/directory")({
       { title: "Dealer Directory · AICDA" },
       {
         name: "description",
-        content: "Verified new & used car dealers across India — searchable by state and city.",
+        content:
+          "Verified new & used car dealers across India — searchable by state and city.",
       },
-      { property: "og:title", content: "Dealer Directory · AICDA" },
+      {
+        property: "og:title",
+        content: "Dealer Directory · AICDA",
+      },
       {
         property: "og:description",
-        content: "Verified new & used car dealers across India — searchable by state and city.",
+        content:
+          "Verified new & used car dealers across India — searchable by state and city.",
       },
     ],
   }),
@@ -24,6 +28,24 @@ export const Route = createFileRoute("/directory")({
 });
 
 function Page() {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchGallery() {
+      try {
+        const response = await getGalleryImages("DIRECTORY");
+        setImages(response.gallery || []);
+      } catch (error) {
+        console.error("Failed to load directory images:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchGallery();
+  }, []);
+
   return (
     <PageShell
       title="Dealer Directory"
@@ -37,32 +59,43 @@ function Page() {
           Search the Directory
         </h2>
       </Prose>
-      <div className="overflow-x-auto scrollbar-hide mt-6 h-180">
-        <div className="mt-6">
-          <img
-            src={maneg1}
-            alt="AICDA Management"
-            className="h-auto w-full max-w-none rounded-xl border border-border shadow-[var(--shadow-card)]"
-          />
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-          <div className="">
-            <img
-              src={member2}
-              alt="AICDA Member"
-              className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover "
-            />
-          </div>
-          <div className="overflow-x-auto scrollbar-hide mt-6 h-85">
-            <img
-              src={memberAICDA2}
-              alt="AICDA Member"
-              className="w-full rounded-xl border border-border shadow-[var(--shadow-card)] object-cover"
-            />
-          </div>
+      {loading ? (
+        <div className="text-center py-10 text-lg">
+          Loading...
         </div>
-      </div>
+      ) : images.length === 0 ? (
+        <div className="text-center py-10 text-lg text-gray-500">
+          No Directory Images Found
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {images.map((image) => (
+            <div
+              key={image.id}
+              className="overflow-hidden rounded-xl border border-border shadow-[var(--shadow-card)] bg-card"
+            >
+              <img
+                src={image.imageUrl}
+                alt={image.title}
+                className="w-full h-72 object-cover"
+              />
+
+              <div className="p-4">
+                <h3 className="font-semibold text-lg">
+                  {image.title}
+                </h3>
+
+                {image.description && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {image.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </PageShell>
   );
 }
