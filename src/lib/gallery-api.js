@@ -16,7 +16,7 @@ export async function uploadGalleryImage(file, category, title = "", description
     await api("/gallery/upload", {
       method: "POST",
       body: formData,
-    })
+    }),
   );
 }
 
@@ -30,20 +30,23 @@ export async function testGallery() {
 // ===============================
 // Get Gallery Images
 // ===============================
-export async function getGalleryImages(category = "") {
+export async function getGalleryImages(category = "", options = {}) {
   const params = new URLSearchParams();
 
   if (category) {
     params.append("category", category);
   }
+  if (options.page) params.append("page", String(options.page));
+  if (options.limit) params.append("limit", String(options.limit));
+  if (options.search?.trim()) params.append("search", options.search.trim());
 
   const response = await api(`/gallery?${params.toString()}`);
 
   const data = unwrapData(response);
 
   return {
-    gallery: data.gallery || [],
-    count: data.count || 0,
+    gallery: data.gallery || data.items || data.images || [],
+    count: data.count ?? data.total ?? data.totalCount ?? 0,
   };
 }
 
@@ -57,10 +60,7 @@ export async function getSingleGalleryImage(id) {
 // ===============================
 // Update Image
 // ===============================
-export async function updateGalleryImage(
-  id,
-  { file, category, title, description }
-) {
+export async function updateGalleryImage(id, { file, category, title, description }) {
   const formData = new FormData();
 
   if (file) formData.append("image", file);
@@ -72,7 +72,7 @@ export async function updateGalleryImage(
     await api(`/gallery/${id}`, {
       method: "PATCH",
       body: formData,
-    })
+    }),
   );
 }
 
@@ -83,6 +83,6 @@ export async function deleteGalleryImage(id) {
   return unwrapData(
     await api(`/gallery/${id}`, {
       method: "DELETE",
-    })
+    }),
   );
 }

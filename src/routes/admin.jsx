@@ -21,6 +21,7 @@ import aicdaLogo from "@/assets/logoAICDA.png";
 import { createAdmin, deleteAdmin, getAdmins, updateAdminStatus } from "@/lib/admin-api";
 import { getCurrentUser, logout } from "@/lib/auth-api";
 import { uploadGalleryImage } from "@/lib/gallery-api";
+import { GalleryManagement as GalleryManagementPanel } from "@/components/admin/GalleryManagement";
 
 export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
@@ -140,7 +141,7 @@ function AdminDashboard() {
         </header>
 
         <div className="mx-auto max-w-7xl p-4 sm:p-8">
-          {active === "Dashboard" ? <DashboardOverview /> : active === "Admins" ? <AdminsManagement /> : active === "Gallery" ? <GalleryManagement /> : <SectionPlaceholder section={active} />}
+          {active === "Dashboard" ? <DashboardOverview /> : active === "Admins" ? <AdminsManagement /> : active === "Gallery" ? <GalleryManagementPanel /> : <SectionPlaceholder section={active} />}
         </div>
       </main>
     </div>
