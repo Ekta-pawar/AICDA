@@ -1,5 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5005/api/v1").replace(/\/$/, "");
-
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 export class ApiError extends Error {
   constructor(message, status, data) {
     super(message);
