@@ -30,7 +30,10 @@ export function PageShell({ title, subtitle, children, hideSidebar }) {
           aria-hidden
         />
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-25" aria-hidden />
-        <div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent" aria-hidden />
+        <div
+          className="absolute inset-0 bg-linear-to-t from-black/45 via-black/5 to-transparent"
+          aria-hidden
+        />
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-6 px-4 py-14 text-center sm:px-6 sm:py-20 lg:px-8 lg:py-24">
           <motion.h1
             initial={false}

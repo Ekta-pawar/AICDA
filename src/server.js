@@ -7,9 +7,7 @@ let serverEntryPromise;
 
 async function getServerEntry() {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => m.default ?? m,
-    );
+    serverEntryPromise = import("@tanstack/react-start/server-entry").then((m) => m.default ?? m);
   }
   return serverEntryPromise;
 }

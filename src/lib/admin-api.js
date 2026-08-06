@@ -10,24 +10,30 @@ export async function getAdmin(id) {
 }
 
 export async function createAdmin(payload) {
-  return unwrapData(await api("/admin/create", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  }));
+  return unwrapData(
+    await api("/admin/create", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  );
 }
 
 export async function updateAdmin(id, payload) {
-  return unwrapData(await api(`/admin/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  }));
+  return unwrapData(
+    await api(`/admin/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  );
 }
 
 export async function updateAdminStatus(id, payload) {
-  return unwrapData(await api(`/admin/${id}/status`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  }));
+  return unwrapData(
+    await api(`/admin/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  );
 }
 
 export async function deleteAdmin(id) {

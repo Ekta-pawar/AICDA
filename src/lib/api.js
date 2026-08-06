@@ -10,8 +10,10 @@ export class ApiError extends Error {
 
 export async function api(path, options = {}) {
   const { headers, body, ...requestOptions } = options;
+  console.log(API_BASE_URL);
   const isFormData = body instanceof FormData;
-  const token = typeof window !== "undefined" ? window.localStorage.getItem("aicda_access_token") : null;
+  const token =
+    typeof window !== "undefined" ? window.localStorage.getItem("aicda_access_token") : null;
   const response = await fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
     headers: {

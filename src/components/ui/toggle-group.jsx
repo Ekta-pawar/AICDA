@@ -23,25 +23,27 @@ const ToggleGroup = React.forwardRef(({ className, variant, size, children, ...p
 
 ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
 
-const ToggleGroupItem = React.forwardRef(({ className, children, variant, size, ...props }, ref) => {
-  const context = React.useContext(ToggleGroupContext);
+const ToggleGroupItem = React.forwardRef(
+  ({ className, children, variant, size, ...props }, ref) => {
+    const context = React.useContext(ToggleGroupContext);
 
-  return (
-    <ToggleGroupPrimitive.Item
-      ref={ref}
-      className={cn(
-        toggleVariants({
-          variant: context.variant || variant,
-          size: context.size || size,
-        }),
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </ToggleGroupPrimitive.Item>
-  );
-});
+    return (
+      <ToggleGroupPrimitive.Item
+        ref={ref}
+        className={cn(
+          toggleVariants({
+            variant: context.variant || variant,
+            size: context.size || size,
+          }),
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </ToggleGroupPrimitive.Item>
+    );
+  },
+);
 
 ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
 

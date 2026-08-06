@@ -1,10 +1,12 @@
 import { api, unwrapData } from "./api";
 
 export async function login(email, password) {
-  const response = unwrapData(await api("/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  }));
+  const response = unwrapData(
+    await api("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  );
   const token = response?.accessToken || response?.token || response?.access_token;
   if (token && typeof window !== "undefined") {
     window.localStorage.setItem("aicda_access_token", token);

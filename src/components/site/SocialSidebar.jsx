@@ -10,10 +10,30 @@ function WhatsAppIcon(props) {
 }
 
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "https://www.facebook.com/j.s.nayol.2025/", label: "Facebook", bg: "#1877F2" },
-  { icon: Twitter, href: "https://x.com/jsnayol?t=kpZp7oAjFZN6ZXUwSHQ56g&s=08", label: "Twitter", bg: "#1DA1F2" },
-  { icon: Youtube, href: "https://www.youtube.com/@jagjeetnayol1187", label: "YouTube", bg: "#FF0000" },
-  { icon: WhatsAppIcon, href: "https://api.whatsapp.com/send?phone=8587036564", label: "WhatsApp", bg: "#25D366" },
+  {
+    icon: Facebook,
+    href: "https://www.facebook.com/j.s.nayol.2025/",
+    label: "Facebook",
+    bg: "#1877F2",
+  },
+  {
+    icon: Twitter,
+    href: "https://x.com/jsnayol?t=kpZp7oAjFZN6ZXUwSHQ56g&s=08",
+    label: "Twitter",
+    bg: "#1DA1F2",
+  },
+  {
+    icon: Youtube,
+    href: "https://www.youtube.com/@jagjeetnayol1187",
+    label: "YouTube",
+    bg: "#FF0000",
+  },
+  {
+    icon: WhatsAppIcon,
+    href: "https://api.whatsapp.com/send?phone=8587036564",
+    label: "WhatsApp",
+    bg: "#25D366",
+  },
   { icon: Phone, href: "tel:+918587036564", label: "Call us", bg: "#22C55E" },
   {
     icon: MapPin,

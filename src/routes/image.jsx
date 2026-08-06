@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { GallerySkeleton } from "@/components/site/GallerySkeleton";
 import { PageShell } from "@/components/site/PageShell";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { getGalleryImages } from "@/lib/gallery-api";
@@ -11,8 +12,7 @@ export const Route = createFileRoute("/image")({
       { title: "Image Gallery · AICDA" },
       {
         name: "description",
-        content:
-          "A visual record of AICDA conventions, meetings and dealer felicitations.",
+        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
       },
     ],
   }),
@@ -21,19 +21,19 @@ export const Route = createFileRoute("/image")({
 
 function imageUrl(image) {
   return (
-    image.imageUrl ||
-    image.url ||
-    image.secure_url ||
-    image.image?.url ||
-    image.image?.secure_url
+    image.imageUrl || image.url || image.secure_url || image.image?.url || image.image?.secure_url
   );
 }
+
+const PAGE_SIZE = 12;
 
 function Page() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function fetchImages() {
@@ -52,32 +52,57 @@ function Page() {
     fetchImages();
   }, []);
 
-  const current = openIndex !== null ? images[openIndex] : null;
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const filteredImages = images.filter((image) =>
+    [image.title, image.description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  );
+  const current = openIndex !== null ? filteredImages[openIndex] : null;
+  const totalPages = Math.max(1, Math.ceil(filteredImages.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageImages = filteredImages.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <PageShell
       title="Image Gallery"
       subtitle="A visual record of AICDA conventions, meetings and dealer felicitations."
     >
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <label className="relative sm:w-72">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search images"
+            className="h-10 w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm"
+          />
+        </label>
+        {!loading && !error && (
+          <p className="text-sm font-semibold text-primary">
+            Total Images Found : <span className="text-foreground">{filteredImages.length}</span>
+          </p>
+        )}
+      </div>
+
       {loading ? (
-        <div className="flex min-h-64 items-center justify-center">
-          <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
+        <GallerySkeleton />
       ) : error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-700">
-          {error}
-        </div>
-      ) : images.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">
-          No Images Found
-        </div>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-700">{error}</div>
+      ) : filteredImages.length === 0 ? (
+        <div className="py-20 text-center text-muted-foreground">No Images Found</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
-          {images.map((image, index) => (
+          {pageImages.map((image, localIndex) => (
             <button
               key={image.id}
               type="button"
-              onClick={() => setOpenIndex(index)}
+              onClick={() => setOpenIndex((currentPage - 1) * PAGE_SIZE + localIndex)}
               className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)] cursor-pointer"
             >
               <img
@@ -94,14 +119,31 @@ function Page() {
         </div>
       )}
 
-      <Dialog
-        open={openIndex !== null}
-        onOpenChange={(open) => !open && setOpenIndex(null)}
-      >
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-3 text-sm font-semibold">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+            className="rounded-lg border border-border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="rounded-lg border border-border px-4 py-2 text-muted-foreground">
+            Page : {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+            className="rounded-lg border border-border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      <Dialog open={openIndex !== null} onOpenChange={(open) => !open && setOpenIndex(null)}>
         <DialogContent className="max-w-3xl border-none bg-black p-0 overflow-hidden">
-          <DialogTitle className="sr-only">
-            {current?.title ?? "Gallery Image"}
-          </DialogTitle>
+          <DialogTitle className="sr-only">{current?.title ?? "Gallery Image"}</DialogTitle>
 
           {current && (
             <div className="relative">
@@ -111,15 +153,13 @@ function Page() {
                 className="max-h-[80vh] w-full object-contain bg-black"
               />
 
-              {images.length > 1 && (
+              {filteredImages.length > 1 && (
                 <>
                   <button
                     type="button"
                     aria-label="Previous Image"
                     onClick={() =>
-                      setOpenIndex(
-                        (i) => (i - 1 + images.length) % images.length
-                      )
+                      setOpenIndex((i) => (i - 1 + filteredImages.length) % filteredImages.length)
                     }
                     className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
                   >
@@ -129,11 +169,7 @@ function Page() {
                   <button
                     type="button"
                     aria-label="Next Image"
-                    onClick={() =>
-                      setOpenIndex(
-                        (i) => (i + 1) % images.length
-                      )
-                    }
+                    onClick={() => setOpenIndex((i) => (i + 1) % filteredImages.length)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
                   >
                     <ChevronRight className="h-6 w-6" />

@@ -32,11 +32,18 @@ function AdminLogin() {
         <div>
           <p className="text-sm font-semibold text-primary">AICDA Admin</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Admin Login</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">Sign in to access the Family Member Management dashboard.</p>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Sign in to access the Family Member Management dashboard.
+          </p>
 
           <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="admin-email" className="mb-2 block text-sm font-semibold text-slate-700">Email address <span className="text-primary">*</span></label>
+              <label
+                htmlFor="admin-email"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Email address <span className="text-primary">*</span>
+              </label>
               <input
                 id="admin-email"
                 name="email"
@@ -51,7 +58,12 @@ function AdminLogin() {
             </div>
 
             <div>
-              <label htmlFor="admin-password" className="mb-2 block text-sm font-semibold text-slate-700">Password <span className="text-primary">*</span></label>
+              <label
+                htmlFor="admin-password"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Password <span className="text-primary">*</span>
+              </label>
               <input
                 id="admin-password"
                 name="password"
@@ -65,9 +77,17 @@ function AdminLogin() {
               />
             </div>
 
-            {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm font-medium text-red-600">
+                {error}
+              </p>
+            )}
 
-            <button type="submit" disabled={loading} className="mt-1 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white transition hover:bg-primary-deep focus:outline-none focus:ring-3 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white transition hover:bg-primary-deep focus:outline-none focus:ring-3 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
+            >
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>

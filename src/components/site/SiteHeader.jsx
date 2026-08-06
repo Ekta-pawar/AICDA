@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, Phone, Mail } from "lucide-react";
 import { primaryNav } from "./nav-data";
-import aicdaLogo from "@/assets/logoAICDA.png";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -17,17 +16,25 @@ export function SiteHeader() {
       <div className="bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src={aicdaLogo} alt="AICDA India logo" className="w-16 h-16 object-contain group-hover:scale-105 transition" />
             <span className="leading-tight">
-              <span className="block text-lg sm:text-2xl font-black tracking-tight text-primary" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <span
+                className="block text-lg sm:text-2xl font-black tracking-tight text-primary"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
                 All India Car Dealers Association
               </span>
-              <span className="block text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-0.5">AICDA · Since 1998</span>
+              <span className="block text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-0.5">
+                AICDA · Since 1998
+              </span>
             </span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm">
-            <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> +91 9818691000</span>
-            <span className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /> info@aicda.in</span>
+            <span className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-primary" /> +91 9818691000
+            </span>
+            <span className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" /> info@aicda.in
+            </span>
           </div>
           <button className="lg:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu">
             {open ? <X /> : <Menu />}

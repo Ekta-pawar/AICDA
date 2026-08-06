@@ -6,7 +6,10 @@ export function Sidebar() {
   return (
     <aside className="w-full lg:w-64 shrink-0">
       <div className="rounded-lg overflow-hidden border border-border bg-card shadow-[var(--shadow-card)]">
-        <div className="bg-primary text-primary-foreground px-4 py-3 font-bold text-lg tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>
+        <div
+          className="bg-primary text-primary-foreground px-4 py-3 font-bold text-lg tracking-wide"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
           Categories
         </div>
         <ul className="divide-y divide-border">

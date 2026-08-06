@@ -180,3 +180,21 @@
     display: none;
   }
 }
+
+@utility scrollbar-thin-dark {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(1 0 0 / 20%) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: oklch(1 0 0 / 20%);
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(1 0 0 / 35%);
+  }
+}
