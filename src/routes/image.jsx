@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { GallerySkeleton } from "@/components/site/GallerySkeleton";
 import { PageShell } from "@/components/site/PageShell";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { getGalleryImages } from "@/lib/gallery-api";
+import { getGalleryImages, isVideoUrl } from "@/lib/gallery-api";
 
 export const Route = createFileRoute("/image")({
   head: () => ({
     meta: [
-      { title: "Image Gallery · AICDA" },
+      { title: "Gallery · AICDA" },
       {
         name: "description",
-        content: "A visual record of AICDA conventions, meetings and dealer felicitations.",
+        content:
+          "A visual record of AICDA conventions, meetings and dealer felicitations — images and videos.",
       },
     ],
   }),
   component: Page,
 });
+
+const TYPE_FILTERS = [
+  ["all", "All"],
+  ["image", "Image"],
+  ["video", "Video"],
+];
 
 function imageUrl(image) {
   return (
@@ -33,7 +40,7 @@ function Page() {
   const [error, setError] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   useEffect(() => {
     async function fetchImages() {
@@ -54,15 +61,13 @@ function Page() {
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [typeFilter]);
 
-  const filteredImages = images.filter((image) =>
-    [image.title, image.description]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(search.trim().toLowerCase()),
-  );
+  const filteredImages = images.filter((image) => {
+    if (typeFilter === "all") return true;
+    const video = isVideoUrl(imageUrl(image));
+    return typeFilter === "video" ? video : !video;
+  });
   const current = openIndex !== null ? filteredImages[openIndex] : null;
   const totalPages = Math.max(1, Math.ceil(filteredImages.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -70,22 +75,30 @@ function Page() {
 
   return (
     <PageShell
-      title="Image Gallery"
-      subtitle="A visual record of AICDA conventions, meetings and dealer felicitations."
+      title="Gallery"
+      subtitle="A visual record of AICDA conventions, meetings and dealer felicitations — images and videos."
     >
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <label className="relative sm:w-72">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search images"
-            className="h-10 w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm"
-          />
-        </label>
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="flex gap-2">
+          {TYPE_FILTERS.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTypeFilter(value)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                typeFilter === value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {!loading && !error && (
           <p className="text-sm font-semibold text-primary">
-            Total Images Found : <span className="text-foreground">{filteredImages.length}</span>
+            Total Found : <span className="text-foreground">{filteredImages.length}</span>
           </p>
         )}
       </div>
@@ -95,27 +108,48 @@ function Page() {
       ) : error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-700">{error}</div>
       ) : filteredImages.length === 0 ? (
-        <div className="py-20 text-center text-muted-foreground">No Images Found</div>
+        <div className="py-20 text-center text-muted-foreground">No Results Found</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-6">
-          {pageImages.map((image, localIndex) => (
-            <button
-              key={image.id}
-              type="button"
-              onClick={() => setOpenIndex((currentPage - 1) * PAGE_SIZE + localIndex)}
-              className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)] cursor-pointer"
-            >
-              <img
-                src={imageUrl(image)}
-                alt={image.title}
-                className="aspect-[3/4] h-55 w-full object-contain object-top transition-transform duration-300 group-hover:scale-105"
-              />
+          {pageImages.map((image, localIndex) => {
+            const url = imageUrl(image);
+            const video = isVideoUrl(url);
+            return (
+              <button
+                key={image.id}
+                type="button"
+                onClick={() => setOpenIndex((currentPage - 1) * PAGE_SIZE + localIndex)}
+                className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)] cursor-pointer"
+              >
+                {video ? (
+                  <video
+                    src={url}
+                    muted
+                    preload="metadata"
+                    className="aspect-[3/4] h-55 w-full bg-black object-contain object-top transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <img
+                    src={url}
+                    alt={image.title}
+                    className="aspect-[3/4] h-55 w-full object-contain object-top transition-transform duration-300 group-hover:scale-105"
+                  />
+                )}
 
-              <span className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2 text-center text-xs sm:text-sm font-semibold text-white">
-                {image.title}
-              </span>
-            </button>
-          ))}
+                {video && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/50">
+                      <Play className="h-6 w-6 fill-white text-white" />
+                    </span>
+                  </span>
+                )}
+
+                <span className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2 text-center text-xs sm:text-sm font-semibold text-white">
+                  {image.title}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -147,11 +181,21 @@ function Page() {
 
           {current && (
             <div className="relative">
-              <img
-                src={imageUrl(current)}
-                alt={current.title}
-                className="max-h-[80vh] w-full object-contain bg-black"
-              />
+              {isVideoUrl(imageUrl(current)) ? (
+                <video
+                  key={imageUrl(current)}
+                  src={imageUrl(current)}
+                  controls
+                  autoPlay
+                  className="max-h-[80vh] w-full bg-black"
+                />
+              ) : (
+                <img
+                  src={imageUrl(current)}
+                  alt={current.title}
+                  className="max-h-[80vh] w-full object-contain bg-black"
+                />
+              )}
 
               {filteredImages.length > 1 && (
                 <>

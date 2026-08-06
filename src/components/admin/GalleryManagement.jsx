@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { ImageOff, LoaderCircle, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { ImageOff, LoaderCircle, Pencil, Play, Plus, Search, Trash2, X } from "lucide-react";
 import {
   deleteGalleryImage,
   getGalleryImages,
+  isVideoFile,
+  isVideoUrl,
   updateGalleryImage,
   uploadGalleryImage,
 } from "@/lib/gallery-api";
@@ -54,6 +56,7 @@ function GalleryForm({ image, onClose, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const preview = file ? URL.createObjectURL(file) : imageUrl(image);
+  const previewIsVideo = file ? isVideoFile(file) : isVideoUrl(preview);
   useEffect(
     () => () => {
       if (file && preview) URL.revokeObjectURL(preview);
@@ -99,23 +102,31 @@ function GalleryForm({ image, onClose, onSaved }) {
       </div>
       <div>
         <label htmlFor="gallery-image" className="mb-2 block text-sm font-semibold text-slate-700">
-          {image ? "Replace image (optional)" : "Image"}
+          {image ? "Replace image or video (optional)" : "Image or video"}
         </label>
         <input
           id="gallery-image"
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           required={!image}
           onChange={(event) => setFile(event.target.files?.[0] || null)}
           className="block w-full rounded-lg border border-slate-200 p-3 text-sm"
         />
-        {preview && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="mt-3 h-40 w-full rounded-lg border border-slate-200 object-contain"
-          />
-        )}
+        {preview &&
+          (previewIsVideo ? (
+            <video
+              src={preview}
+              controls
+              muted
+              className="mt-3 h-40 w-full rounded-lg border border-slate-200 bg-black object-contain"
+            />
+          ) : (
+            <img
+              src={preview}
+              alt="Preview"
+              className="mt-3 h-40 w-full rounded-lg border border-slate-200 object-contain"
+            />
+          ))}
       </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">
@@ -136,7 +147,7 @@ function GalleryForm({ image, onClose, onSaved }) {
           className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60"
         >
           {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
-          {image ? "Save changes" : "Upload image"}
+          {image ? "Save changes" : "Upload"}
         </button>
       </div>
     </form>
@@ -272,11 +283,27 @@ export function GalleryManagement() {
                 {pageImages.map((image) => (
                   <tr key={imageId(image)} className="border-t border-slate-100">
                     <td className="px-4 py-3">
-                      <img
-                        src={imageUrl(image)}
-                        alt={image.title || "Gallery"}
-                        className="h-14 w-14 rounded-md border border-slate-200 object-cover"
-                      />
+                      <div className="relative h-14 w-14">
+                        {isVideoUrl(imageUrl(image)) ? (
+                          <video
+                            src={imageUrl(image)}
+                            muted
+                            preload="metadata"
+                            className="h-14 w-14 rounded-md border border-slate-200 bg-black object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={imageUrl(image)}
+                            alt={image.title || "Gallery"}
+                            className="h-14 w-14 rounded-md border border-slate-200 object-cover"
+                          />
+                        )}
+                        {isVideoUrl(imageUrl(image)) && (
+                          <span className="absolute inset-0 flex items-center justify-center rounded-md bg-black/25">
+                            <Play className="h-5 w-5 fill-white text-white" />
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
