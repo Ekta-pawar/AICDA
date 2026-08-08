@@ -15,6 +15,7 @@ import { Route as LetterRouteImport } from './routes/letter'
 import { Route as ImageRouteImport } from './routes/image'
 import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as BecomeMemberRouteImport } from './routes/become-member'
 import { Route as AssociationEventsRouteImport } from './routes/association-events'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
@@ -67,6 +68,11 @@ const DirectoryRoute = DirectoryRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeMemberRoute = BecomeMemberRouteImport.update({
+  id: '/become-member',
+  path: '/become-member',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssociationEventsRoute = AssociationEventsRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
+  '/become-member': typeof BecomeMemberRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
   '/image': typeof ImageRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
+  '/become-member': typeof BecomeMemberRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
   '/image': typeof ImageRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
+  '/become-member': typeof BecomeMemberRoute
   '/contact': typeof ContactRoute
   '/directory': typeof DirectoryRoute
   '/image': typeof ImageRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/association-events'
+    | '/become-member'
     | '/contact'
     | '/directory'
     | '/image'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/association-events'
+    | '/become-member'
     | '/contact'
     | '/directory'
     | '/image'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/association-events'
+    | '/become-member'
     | '/contact'
     | '/directory'
     | '/image'
@@ -387,6 +399,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AssociationEventsRoute: typeof AssociationEventsRoute
+  BecomeMemberRoute: typeof BecomeMemberRoute
   ContactRoute: typeof ContactRoute
   DirectoryRoute: typeof DirectoryRoute
   ImageRoute: typeof ImageRoute
@@ -455,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-member': {
+      id: '/become-member'
+      path: '/become-member'
+      fullPath: '/become-member'
+      preLoaderRoute: typeof BecomeMemberRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/association-events': {
@@ -636,6 +656,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AssociationEventsRoute: AssociationEventsRoute,
+  BecomeMemberRoute: BecomeMemberRoute,
   ContactRoute: ContactRoute,
   DirectoryRoute: DirectoryRoute,
   ImageRoute: ImageRoute,

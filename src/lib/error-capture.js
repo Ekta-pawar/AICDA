@@ -23,4 +23,3 @@ export function consumeLastCapturedError() {
   lastCapturedError = undefined;
   return error;
 }
-

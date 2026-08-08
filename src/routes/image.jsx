@@ -78,7 +78,7 @@ function Page() {
       title="Gallery"
       subtitle="A visual record of AICDA conventions, meetings and dealer felicitations — images and videos."
     >
-      <div className="mb-6 flex flex-col gap-4">
+      <div className="mb-6 flex flex-col gap-3 ling-item-center sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2">
           {TYPE_FILTERS.map(([value, label]) => (
             <button

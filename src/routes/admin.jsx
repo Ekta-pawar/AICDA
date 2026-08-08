@@ -8,6 +8,7 @@ import {
   CreditCard,
   GalleryHorizontal,
   Image,
+  Inbox,
   KeyRound,
   Landmark,
   LayoutDashboard,
@@ -27,10 +28,11 @@ import {
 } from "lucide-react";
 import aicdaLogo from "@/assets/logoAICDA.png";
 import { createAdmin, deleteAdmin, getAdmins, updateAdminStatus } from "@/lib/admin-api";
-import { getCurrentUser, logout } from "@/lib/auth-api";
+import { changePassword, getCurrentUser, logout } from "@/lib/auth-api";
 import { uploadGalleryImage } from "@/lib/gallery-api";
 import { GalleryManagement as GalleryManagementPanel } from "@/components/admin/GalleryManagement";
 import { DirectoryManagement } from "@/components/admin/DirectoryManagement";
+import { EnquiryManagement } from "@/components/admin/EnquiryManagement";
 
 export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
@@ -39,7 +41,7 @@ const navigation = [
   { label: "Admins", icon: ShieldCheck },
   // { label: "Banner Master", icon: GalleryHorizontal },
   { label: "Manage Directory", icon: BookUser },
-  { label: "Management", icon: Settings2 },
+  // { label: "Management", icon: Settings2 },
   { label: "Reset Directory", icon: RotateCcw },
   { label: "Reset Management", icon: RotateCw },
   { label: "Association Event", icon: CalendarDays },
@@ -47,11 +49,12 @@ const navigation = [
   { label: "Image", icon: Image },
 
   { label: "Our Staff", icon: UserCog },
- 
+
   { label: "Card", icon: CreditCard },
   // { label: "Change Password", icon: KeyRound },
 
   { label: "Complaint", icon: MessageSquareWarning },
+  { label: "Enquiries", icon: Inbox },
 ];
 
 function AdminRoute() {
@@ -70,6 +73,8 @@ function AdminDashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -191,8 +196,8 @@ function AdminDashboard() {
         />
       )}
       <main className="min-h-screen lg:pl-72">
-        <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-8">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:h-20 sm:px-8 sm:py-0">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               className="rounded-lg p-2 hover:bg-slate-100 lg:hidden"
               onClick={() => setMenuOpen(true)}
@@ -201,18 +206,50 @@ function AdminDashboard() {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <p className="text-sm text-slate-500">Admin panel</p>
-              <h1 className="text-lg font-bold">{active}</h1>
+              <p className="text-xs text-slate-500 sm:text-sm">Admin panel</p>
+              <h1 className="text-base font-bold sm:text-lg">{active}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+          <div className="relative ml-auto flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:px-3"
+            >
+              <KeyRound className="h-4 w-4" />{" "}
+              <span className="hidden sm:inline">Change password</span>
+            </button>
+            <button
+              onClick={() => setProfileMenuOpen((open) => !open)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white"
+              aria-haspopup="true"
+              aria-expanded={profileMenuOpen}
+            >
               AD
-            </div>
+            </button>
+            {profileMenuOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-30 cursor-default"
+                  onClick={() => setProfileMenuOpen(false)}
+                  aria-label="Close profile menu"
+                />
+                <div className="absolute right-0 top-11 z-40 w-56 rounded-lg border border-slate-200 bg-white py-2 shadow-lg">
+                  <p className="truncate px-4 py-1.5 text-xs text-slate-500">
+                    {user?.email || "Super Admin"}
+                  </p>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </header>
 
-        <div className="mx-auto max-w-7xl p-4 sm:p-8">
+        <div className="mx-auto max-w-7xl p-3 sm:p-6">
           {active === "Dashboard" ? (
             <DashboardOverview />
           ) : active === "Admins" ? (
@@ -221,11 +258,166 @@ function AdminDashboard() {
             <DirectoryManagement />
           ) : active === "Image" ? (
             <GalleryManagementPanel />
+          ) : active === "Enquiries" ? (
+            <EnquiryManagement />
           ) : (
             <SectionPlaceholder section={active} />
           )}
         </div>
       </main>
+      {showPasswordModal && (
+        <ChangePasswordModal
+          onClose={() => setShowPasswordModal(false)}
+          defaultEmail={user?.email || ""}
+        />
+      )}
+    </div>
+  );
+}
+
+function ChangePasswordModal({ onClose, defaultEmail }) {
+  const [email, setEmail] = useState(defaultEmail || "");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    if (!email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("New password must be at least 6 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirm password do not match.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await changePassword({ email: email.trim(), newPassword, confirmPassword });
+      setSuccess(true);
+    } catch (requestError) {
+      setError(requestError.message || "Could not update password.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-[1px]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="change-password-title"
+    >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-7">
+        <h3 id="change-password-title" className="text-2xl font-bold text-slate-800">
+          Change password
+        </h3>
+
+        {success ? (
+          <>
+            <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              Password updated successfully.
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-deep"
+              >
+                Done
+              </button>
+            </div>
+          </>
+        ) : (
+          <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+            <div>
+              <label
+                htmlFor="change-password-email"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Email
+              </label>
+              <input
+                id="change-password-email"
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="admin@example.com"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
+              />
+              <p className="mt-1.5 text-xs text-slate-500">
+                Whose password you want to change. Defaults to your own account.
+              </p>
+            </div>
+            <div>
+              <label
+                htmlFor="change-new-password"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                New password
+              </label>
+              <input
+                id="change-new-password"
+                type="password"
+                required
+                minLength={6}
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="confirm-new-password"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Confirm new password
+              </label>
+              <input
+                id="confirm-new-password"
+                type="password"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
+              />
+            </div>
+            {error && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-11 rounded-lg bg-slate-100 px-5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-deep disabled:opacity-60"
+              >
+                {saving ? "Updating…" : "Update password"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
@@ -239,7 +431,7 @@ function DashboardOverview() {
   ];
   return (
     <>
-      <div className="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Welcome back, Admin</h2>
           <p className="mt-1 text-sm text-slate-500">Here’s what’s happening with AICDA today.</p>
@@ -248,11 +440,11 @@ function DashboardOverview() {
           Create announcement
         </button>
       </div>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map(([label, value, note, color]) => (
           <article
             key={label}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
           >
             <p className="text-sm font-medium text-slate-500">{label}</p>
             <p className="mt-3 text-3xl font-bold">{value}</p>
@@ -260,8 +452,8 @@ function DashboardOverview() {
           </article>
         ))}
       </section>
-      <section className="mt-7 grid gap-6 lg:grid-cols-3">
-        <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+      <section className="mt-5 grid gap-4 lg:grid-cols-3">
+        <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="font-bold">Recent activity</h3>
             <button className="text-sm font-semibold text-primary">View all</button>
@@ -287,7 +479,7 @@ function DashboardOverview() {
             ))}
           </div>
         </article>
-        <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="font-bold">Quick actions</h3>
           <div className="mt-4 space-y-2">
             {["Add a member", "Upload gallery images", "Publish notice"].map((action) => (
@@ -341,7 +533,6 @@ function AdminsManagement() {
         email: form.get("email"),
         phone: form.get("phone"),
         password: form.get("password"),
-        role: String(form.get("role")).replace(" ", "_").toUpperCase(),
       });
       setShowForm(false);
       await loadAdmins();
@@ -377,15 +568,15 @@ function AdminsManagement() {
 
   return (
     <>
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm text-slate-500">Welcome back,</p>
           <h2 className="mt-0.5 text-2xl font-bold tracking-tight">Super Admin</h2>
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h3 className="font-serif text-3xl font-bold text-primary">Admins</h3>
             <p className="mt-1 text-base text-slate-500">Manage administrator accounts</p>
@@ -399,22 +590,22 @@ function AdminsManagement() {
         </div>
 
         {error && (
-          <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         )}
         {loading ? (
           <p className="py-12 text-center text-sm text-slate-500">Loading administrators…</p>
         ) : admins.length ? (
-          <div className="mt-8 overflow-x-auto scrollbar-hide">
+          <div className="mt-5 overflow-x-auto scrollbar-hide">
             <table className="w-full min-w-160 text-left text-sm">
               <thead className="border-b border-slate-200 text-slate-500">
                 <tr>
-                  <th className="px-3 py-3">Name</th>
-                  <th className="px-3 py-3">Email</th>
-                  <th className="px-3 py-3">Role</th>
-                  <th className="px-3 py-3">Status</th>
-                  <th className="px-3 py-3 text-right">Actions</th>
+                  <th className="px-3 py-2.5">Name</th>
+                  <th className="px-3 py-2.5">Email</th>
+                  <th className="px-3 py-2.5">Role</th>
+                  <th className="px-3 py-2.5">Status</th>
+                  <th className="px-3 py-2.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -425,14 +616,14 @@ function AdminsManagement() {
                       key={admin.id || admin._id || admin.email}
                       className="border-b border-slate-100"
                     >
-                      <td className="px-3 py-4 font-medium">
+                      <td className="px-3 py-3 font-medium">
                         {admin.name ||
                           [admin.firstName, admin.lastName].filter(Boolean).join(" ") ||
                           "—"}
                       </td>
-                      <td className="px-3 py-4 text-slate-600">{admin.email}</td>
-                      <td className="px-3 py-4 text-slate-600">{admin.role || "ADMIN"}</td>
-                      <td className="px-3 py-4">
+                      <td className="px-3 py-3 text-slate-600">{admin.email}</td>
+                      <td className="px-3 py-3 text-slate-600">{admin.role || "SUPER_ADMIN"}</td>
+                      <td className="px-3 py-3">
                         <button
                           onClick={() => toggleStatus(admin)}
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
@@ -440,7 +631,7 @@ function AdminsManagement() {
                           {isActive ? "Active" : "Inactive"}
                         </button>
                       </td>
-                      <td className="space-x-3 px-3 py-4 text-right">
+                      <td className="space-x-3 px-3 py-3 text-right">
                         <button
                           onClick={() => removeAdmin(admin)}
                           className="text-sm font-semibold text-red-600 hover:text-red-800"
@@ -455,7 +646,7 @@ function AdminsManagement() {
             </table>
           </div>
         ) : (
-          <div className="mt-8 flex min-h-72 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center">
+          <div className="mt-5 flex min-h-72 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="h-8 w-8" />
             </div>
@@ -495,23 +686,6 @@ function AdminsManagement() {
                 type="password"
                 required
               />
-              <div>
-                <label
-                  htmlFor="admin-role"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Role
-                </label>
-                <select
-                  id="admin-role"
-                  name="role"
-                  defaultValue="Admin"
-                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
-                >
-                  <option>Admin</option>
-                  <option>Super Admin</option>
-                </select>
-              </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button

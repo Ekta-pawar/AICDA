@@ -30,3 +30,12 @@ export async function getCurrentUser() {
 export async function testAuth() {
   return unwrapData(await api("/auth/test"));
 }
+
+export async function changePassword({ email, newPassword, confirmPassword }) {
+  return unwrapData(
+    await api("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ email, newPassword, confirmPassword }),
+    }),
+  );
+}

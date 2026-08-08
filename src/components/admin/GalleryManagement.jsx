@@ -211,15 +211,15 @@ export function GalleryManagement() {
     }
   };
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-bold text-primary">
           Total Images Found : <span className="text-slate-700">{visibleImages.length}</span>
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold">Gallery management</h2>
             <p className="mt-1 text-sm text-slate-500">Upload, edit, and remove gallery images.</p>
@@ -231,7 +231,7 @@ export function GalleryManagement() {
             <Plus className="h-5 w-5" /> Add image
           </button>
         </div>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
@@ -255,7 +255,7 @@ export function GalleryManagement() {
           </label>
         </div>
         {error && (
-          <p role="alert" className="mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         )}
@@ -264,25 +264,25 @@ export function GalleryManagement() {
             <LoaderCircle className="h-5 w-5 animate-spin" /> Loading images…
           </div>
         ) : visibleImages.length === 0 ? (
-          <div className="mt-6 flex min-h-60 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300">
+          <div className="mt-4 flex min-h-60 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300">
             <ImageOff className="h-9 w-9 text-slate-300" />
             <p className="mt-3 text-sm font-semibold">No images found</p>
           </div>
         ) : (
-          <div className="mt-6 overflow-x-auto scrollbar-hide rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-x-auto scrollbar-hide rounded-xl border border-slate-200">
             <table className="w-full min-w-150 text-left text-sm">
               <thead className="bg-slate-50 text-slate-500">
                 <tr>
-                  <th className="px-4 py-3">Image</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Uploaded</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-3 py-2.5">Image</th>
+                  <th className="px-3 py-2.5">Category</th>
+                  <th className="px-3 py-2.5">Uploaded</th>
+                  <th className="px-3 py-2.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pageImages.map((image) => (
                   <tr key={imageId(image)} className="border-t border-slate-100">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5">
                       <div className="relative h-14 w-14">
                         {isVideoUrl(imageUrl(image)) ? (
                           <video
@@ -305,15 +305,15 @@ export function GalleryManagement() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5">
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                         {categoryLabel(image.category)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="px-3 py-2.5 text-slate-500">
                       {image.createdAt ? new Date(image.createdAt).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2.5">
                       <div className="flex justify-end gap-3">
                         <button
                           onClick={() => setEditing(image)}
@@ -336,7 +336,7 @@ export function GalleryManagement() {
           </div>
         )}
         {totalPages > 1 && (
-          <div className="mt-5 flex items-center justify-center gap-3 text-sm font-semibold">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm font-semibold">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}

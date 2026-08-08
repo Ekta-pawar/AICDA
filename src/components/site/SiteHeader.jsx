@@ -35,6 +35,12 @@ export function SiteHeader() {
             <span className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-primary" /> info@aicda.in
             </span>
+            <Link
+              to="/become-member"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-deep"
+            >
+              Become Member
+            </Link>
           </div>
           <button className="lg:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu">
             {open ? <X /> : <Menu />}
@@ -60,6 +66,15 @@ export function SiteHeader() {
         </nav>
         {open && (
           <nav className="lg:hidden">
+            <div className="px-2 pt-2 md:hidden">
+              <Link
+                to="/become-member"
+                onClick={() => setOpen(false)}
+                className="block rounded-md bg-primary-foreground px-3 py-2 text-center text-sm font-semibold text-primary hover:opacity-90"
+              >
+                Become Member
+              </Link>
+            </div>
             <ul className="px-2 py-2">
               {primaryNav.map((item) => (
                 <li key={item.to}>
