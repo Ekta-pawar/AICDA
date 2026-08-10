@@ -17,6 +17,10 @@ function buildMemberFormData(member) {
     packetNo: member.packetNo,
     dateOfJoining: member.dateOfJoining,
     aadharNo: member.aadharNo,
+    state: member.state,
+    city: member.city,
+    validityFrom: member.validityFrom,
+    validityTo: member.validityTo,
   };
 
   Object.entries(fields).forEach(([key, value]) => {

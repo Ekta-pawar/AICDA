@@ -12,7 +12,7 @@ import {
 const CATEGORIES = [
   ["ASSOCIATION", "Association"],
   ["POLITICAL_ACHIEVEMENT", "Political Achievement"],
-  ["IMAGE", "Image"],
+  ["IMAGE", "Image / Video"],
   ["DIRECTORY", "Directory"],
   ["LETTER", "Letter"],
 ];

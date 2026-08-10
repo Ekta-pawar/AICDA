@@ -27,7 +27,13 @@ import {
   X,
 } from "lucide-react";
 import aicdaLogo from "@/assets/logoAICDA.png";
-import { createAdmin, deleteAdmin, getAdmins, updateAdminStatus } from "@/lib/admin-api";
+import {
+  createSuperAdmin,
+  deleteSuperAdmin,
+  getSuperAdmins,
+  resetSuperAdminPassword,
+  updateSuperAdminStatus,
+} from "@/lib/super-admin-api";
 import { changePassword, getCurrentUser, logout } from "@/lib/auth-api";
 import { uploadGalleryImage } from "@/lib/gallery-api";
 import { GalleryManagement as GalleryManagementPanel } from "@/components/admin/GalleryManagement";
@@ -38,19 +44,19 @@ export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Admins", icon: ShieldCheck },
+  { label: "Super Admins", icon: ShieldCheck },
   // { label: "Banner Master", icon: GalleryHorizontal },
   { label: "Manage Directory", icon: BookUser },
   // { label: "Management", icon: Settings2 },
   { label: "Reset Directory", icon: RotateCcw },
   { label: "Reset Management", icon: RotateCw },
-  { label: "Association Event", icon: CalendarDays },
-  { label: "Political Event", icon: Landmark },
+  // { label: "Association Event", icon: CalendarDays },
+  // { label: "Political Event", icon: Landmark },
   { label: "Image", icon: Image },
 
   { label: "Our Staff", icon: UserCog },
 
-  { label: "Card", icon: CreditCard },
+  // { label: "Card", icon: CreditCard },
   // { label: "Change Password", icon: KeyRound },
 
   { label: "Complaint", icon: MessageSquareWarning },
@@ -75,6 +81,7 @@ function AdminDashboard() {
   const [authLoading, setAuthLoading] = useState(true);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordResetTarget, setPasswordResetTarget] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -129,7 +136,7 @@ function AdminDashboard() {
     <div className="h-screen overflow-y-auto overflow-x-hidden bg-slate-50 text-slate-900">
       {" "}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-slate-950 text-slate-100 transition-transform lg:translate-x-0 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 flex w-62 flex-col bg-slate-950 text-slate-100 transition-transform lg:translate-x-0 ${menuOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex h-25 items-center gap-3 border-b border-white/10 px-6">
           <img
@@ -154,9 +161,9 @@ function AdminDashboard() {
           className="min-h-0 flex-1 space-y-1 overflow-y-auto scrollbar-thin-dark p-4"
           aria-label="Admin navigation"
         >
-          <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
+          {/* <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
             Workspace
-          </p>
+          </p> */}
           {navigation.map(({ label, icon: Icon }) => (
             <button
               key={label}
@@ -195,7 +202,7 @@ function AdminDashboard() {
           aria-label="Close menu"
         />
       )}
-      <main className="min-h-screen lg:pl-72">
+      <main className="min-h-screen lg:pl-62">
         <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-200 bg-white/90 px-3 py-2 backdrop-blur sm:h-20 sm:px-8 sm:py-0">
           <div className="flex items-center gap-2 sm:gap-3">
             <button
@@ -249,11 +256,11 @@ function AdminDashboard() {
           </div>
         </header>
 
-        <div className="mx-auto max-w-7xl p-3 sm:p-6">
+        <div className="mx-auto max-w-full p-3 sm:p-6">
           {active === "Dashboard" ? (
             <DashboardOverview />
-          ) : active === "Admins" ? (
-            <AdminsManagement />
+          ) : active === "Super Admins" ? (
+            <SuperAdminsManagement onChangePassword={setPasswordResetTarget} />
           ) : active === "Manage Directory" ? (
             <DirectoryManagement />
           ) : active === "Image" ? (
@@ -271,11 +278,18 @@ function AdminDashboard() {
           defaultEmail={user?.email || ""}
         />
       )}
+      {passwordResetTarget !== null && (
+        <ChangePasswordModal
+          onClose={() => setPasswordResetTarget(null)}
+          defaultEmail={passwordResetTarget.email}
+          superAdminId={passwordResetTarget.id || passwordResetTarget._id}
+        />
+      )}
     </div>
   );
 }
 
-function ChangePasswordModal({ onClose, defaultEmail }) {
+function ChangePasswordModal({ onClose, defaultEmail, superAdminId }) {
   const [email, setEmail] = useState(defaultEmail || "");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -287,7 +301,7 @@ function ChangePasswordModal({ onClose, defaultEmail }) {
     event.preventDefault();
     setError("");
 
-    if (!email.trim()) {
+    if (!superAdminId && !email.trim()) {
       setError("Email is required.");
       return;
     }
@@ -302,7 +316,11 @@ function ChangePasswordModal({ onClose, defaultEmail }) {
 
     setSaving(true);
     try {
-      await changePassword({ email: email.trim(), newPassword, confirmPassword });
+      if (superAdminId) {
+        await resetSuperAdminPassword(superAdminId, { newPassword, confirmPassword });
+      } else {
+        await changePassword({ email: email.trim(), newPassword, confirmPassword });
+      }
       setSuccess(true);
     } catch (requestError) {
       setError(requestError.message || "Could not update password.");
@@ -340,26 +358,33 @@ function ChangePasswordModal({ onClose, defaultEmail }) {
           </>
         ) : (
           <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="change-password-email"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Email
-              </label>
-              <input
-                id="change-password-email"
-                type="email"
-                required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="admin@example.com"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
-              />
-              <p className="mt-1.5 text-xs text-slate-500">
-                Whose password you want to change. Defaults to your own account.
+            {superAdminId ? (
+              <p className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Resetting password for{" "}
+                <span className="font-semibold">{email || "this account"}</span>
               </p>
-            </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="change-password-email"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Email
+                </label>
+                <input
+                  id="change-password-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="admin@example.com"
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
+                />
+                <p className="mt-1.5 text-xs text-slate-500">
+                  Whose password you want to change. Defaults to your own account.
+                </p>
+              </div>
+            )}
             <div>
               <label
                 htmlFor="change-new-password"
@@ -498,27 +523,27 @@ function DashboardOverview() {
   );
 }
 
-function AdminsManagement() {
+function SuperAdminsManagement({ onChangePassword }) {
   const [showForm, setShowForm] = useState(false);
-  const [admins, setAdmins] = useState([]);
+  const [superAdmins, setSuperAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const loadAdmins = async () => {
+  const loadSuperAdmins = async () => {
     setLoading(true);
     setError("");
     try {
-      setAdmins(await getAdmins());
+      setSuperAdmins(await getSuperAdmins());
     } catch (requestError) {
-      setError(requestError.message || "Could not load administrators.");
+      setError(requestError.message || "Could not load Super Admins.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAdmins();
+    loadSuperAdmins();
   }, []);
 
   const handleCreate = async (event) => {
@@ -527,7 +552,7 @@ function AdminsManagement() {
     setSaving(true);
     setError("");
     try {
-      await createAdmin({
+      await createSuperAdmin({
         firstName: form.get("firstName"),
         lastName: form.get("lastName"),
         email: form.get("email"),
@@ -535,34 +560,34 @@ function AdminsManagement() {
         password: form.get("password"),
       });
       setShowForm(false);
-      await loadAdmins();
+      await loadSuperAdmins();
     } catch (requestError) {
-      setError(requestError.message || "Could not create administrator.");
+      setError(requestError.message || "Could not create Super Admin.");
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleStatus = async (admin) => {
-    const id = admin.id || admin._id;
+  const toggleStatus = async (superAdmin) => {
+    const id = superAdmin.id || superAdmin._id;
     if (!id) return;
-    const isActive = admin.isActive ?? admin.active ?? admin.status === "ACTIVE";
+    const isActive = superAdmin.isActive ?? superAdmin.active ?? superAdmin.status === "ACTIVE";
     try {
-      await updateAdminStatus(id, { isActive: !isActive });
-      await loadAdmins();
+      await updateSuperAdminStatus(id, { isActive: !isActive });
+      await loadSuperAdmins();
     } catch (requestError) {
-      setError(requestError.message || "Could not update administrator status.");
+      setError(requestError.message || "Could not update Super Admin status.");
     }
   };
 
-  const removeAdmin = async (admin) => {
-    const id = admin.id || admin._id;
-    if (!id || !window.confirm(`Delete ${admin.email || "this administrator"}?`)) return;
+  const removeSuperAdmin = async (superAdmin) => {
+    const id = superAdmin.id || superAdmin._id;
+    if (!id || !window.confirm(`Delete ${superAdmin.email || "this Super Admin"}?`)) return;
     try {
-      await deleteAdmin(id);
-      await loadAdmins();
+      await deleteSuperAdmin(id);
+      await loadSuperAdmins();
     } catch (requestError) {
-      setError(requestError.message || "Could not delete administrator.");
+      setError(requestError.message || "Could not delete Super Admin.");
     }
   };
 
@@ -578,14 +603,14 @@ function AdminsManagement() {
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="font-serif text-3xl font-bold text-primary">Admins</h3>
-            <p className="mt-1 text-base text-slate-500">Manage administrator accounts</p>
+            <h3 className="font-serif text-3xl font-bold text-primary">Super Admins</h3>
+            <p className="mt-1 text-base text-slate-500">Manage Super Admin accounts</p>
           </div>
           <button
             onClick={() => setShowForm(true)}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-deep"
           >
-            <Plus className="h-5 w-5" /> New admin
+            <Plus className="h-5 w-5" /> New Super Admin
           </button>
         </div>
 
@@ -595,8 +620,8 @@ function AdminsManagement() {
           </p>
         )}
         {loading ? (
-          <p className="py-12 text-center text-sm text-slate-500">Loading administrators…</p>
-        ) : admins.length ? (
+          <p className="py-12 text-center text-sm text-slate-500">Loading Super Admins…</p>
+        ) : superAdmins.length ? (
           <div className="mt-5 overflow-x-auto scrollbar-hide">
             <table className="w-full min-w-160 text-left text-sm">
               <thead className="border-b border-slate-200 text-slate-500">
@@ -609,23 +634,26 @@ function AdminsManagement() {
                 </tr>
               </thead>
               <tbody>
-                {admins.map((admin) => {
-                  const isActive = admin.isActive ?? admin.active ?? admin.status === "ACTIVE";
+                {superAdmins.map((superAdmin) => {
+                  const isActive =
+                    superAdmin.isActive ?? superAdmin.active ?? superAdmin.status === "ACTIVE";
                   return (
                     <tr
-                      key={admin.id || admin._id || admin.email}
+                      key={superAdmin.id || superAdmin._id || superAdmin.email}
                       className="border-b border-slate-100"
                     >
                       <td className="px-3 py-3 font-medium">
-                        {admin.name ||
-                          [admin.firstName, admin.lastName].filter(Boolean).join(" ") ||
+                        {superAdmin.name ||
+                          [superAdmin.firstName, superAdmin.lastName].filter(Boolean).join(" ") ||
                           "—"}
                       </td>
-                      <td className="px-3 py-3 text-slate-600">{admin.email}</td>
-                      <td className="px-3 py-3 text-slate-600">{admin.role || "SUPER_ADMIN"}</td>
+                      <td className="px-3 py-3 text-slate-600">{superAdmin.email}</td>
+                      <td className="px-3 py-3 text-slate-600">
+                        {superAdmin.role || "SUPER_ADMIN"}
+                      </td>
                       <td className="px-3 py-3">
                         <button
-                          onClick={() => toggleStatus(admin)}
+                          onClick={() => toggleStatus(superAdmin)}
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
                         >
                           {isActive ? "Active" : "Inactive"}
@@ -633,7 +661,13 @@ function AdminsManagement() {
                       </td>
                       <td className="space-x-3 px-3 py-3 text-right">
                         <button
-                          onClick={() => removeAdmin(admin)}
+                          onClick={() => onChangePassword?.(superAdmin)}
+                          className="text-sm font-semibold text-slate-600 hover:text-primary"
+                        >
+                          Change password
+                        </button>
+                        <button
+                          onClick={() => removeSuperAdmin(superAdmin)}
                           className="text-sm font-semibold text-red-600 hover:text-red-800"
                         >
                           Delete
@@ -650,11 +684,9 @@ function AdminsManagement() {
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="h-8 w-8" />
             </div>
-            <h4 className="mt-5 text-lg font-bold text-slate-800">
-              No administrator accounts found
-            </h4>
+            <h4 className="mt-5 text-lg font-bold text-slate-800">No Super Admin accounts found</h4>
             <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Create an administrator to grant management portal access.
+              Create a Super Admin to grant management portal access.
             </p>
           </div>
         )}
@@ -665,21 +697,33 @@ function AdminsManagement() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-[1px]"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="create-admin-title"
+          aria-labelledby="create-super-admin-title"
         >
           <form
             className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-7"
             onSubmit={handleCreate}
           >
-            <h3 id="create-admin-title" className="text-2xl font-bold text-slate-800">
-              Create new admin
+            <h3 id="create-super-admin-title" className="text-2xl font-bold text-slate-800">
+              Create new Super Admin
             </h3>
             <div className="mt-6 grid gap-x-5 gap-y-5 sm:grid-cols-2">
-              <AdminField id="first-name" name="firstName" label="First name" required />
-              <AdminField id="last-name" name="lastName" label="Last name" required />
-              <AdminField id="admin-email" name="email" label="Email" type="email" required />
-              <AdminField id="phone-number" name="phone" label="Phone number" type="tel" required />
-              <AdminField
+              <SuperAdminField id="first-name" name="firstName" label="First name" required />
+              <SuperAdminField id="last-name" name="lastName" label="Last name" required />
+              <SuperAdminField
+                id="super-admin-email"
+                name="email"
+                label="Email"
+                type="email"
+                required
+              />
+              <SuperAdminField
+                id="phone-number"
+                name="phone"
+                label="Phone number"
+                type="tel"
+                required
+              />
+              <SuperAdminField
                 id="new-password"
                 name="password"
                 label="Password"
@@ -700,7 +744,7 @@ function AdminsManagement() {
                 disabled={saving}
                 className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-deep disabled:opacity-60"
               >
-                {saving ? "Creating…" : "Create admin"}
+                {saving ? "Creating…" : "Create Super Admin"}
               </button>
             </div>
           </form>
@@ -710,7 +754,7 @@ function AdminsManagement() {
   );
 }
 
-function AdminField({ id, name, label, type = "text", required = false }) {
+function SuperAdminField({ id, name, label, type = "text", required = false }) {
   return (
     <div>
       <label htmlFor={id} className="mb-2 block text-sm font-semibold text-slate-700">

@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import { Eye, Inbox, LoaderCircle, Search, Trash2, X } from "lucide-react";
+import {
+  Building2,
+  Calendar,
+  Eye,
+  Inbox,
+  LoaderCircle,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import { deleteEnquiry, getEnquiries } from "@/lib/enquiry-api";
 
 const requestTypeLabel = (value) =>
@@ -12,12 +25,12 @@ function Modal({ title, onClose, children }) {
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-white p-7 shadow-2xl sm:p-10">
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{title}</h3>
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 text-lg font-bold text-slate-900">{title}</div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+            className="shrink-0 rounded-md p-1 text-slate-500 hover:bg-slate-100"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -29,13 +42,18 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-function DetailRow({ label, value }) {
+function InfoItem({ icon: Icon, label, value }) {
   if (!value) return null;
   return (
-    <p className="py-1.5 text-sm">
-      <span className="font-semibold text-slate-500">{label}:</span>{" "}
-      <span className="text-slate-800">{value}</span>
-    </p>
+    <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="truncate text-sm font-medium text-slate-800">{value}</p>
+      </div>
+    </div>
   );
 }
 
@@ -215,28 +233,40 @@ export function EnquiryManagement() {
       </div>
 
       {viewing && (
-        <Modal title="Enquiry details" onClose={() => setViewing(null)}>
-          <div className="divide-y divide-slate-100">
-            <DetailRow label="Type" value={requestTypeLabel(viewing.requestType)} />
-            <DetailRow label="Name" value={viewing.fullName} />
-            <DetailRow label="Mobile" value={viewing.mobile} />
-            <DetailRow label="Email" value={viewing.email} />
-            <DetailRow label="Company" value={viewing.companyName} />
-            <DetailRow
+        <Modal
+          title={
+            <div>
+              <p className="text-lg font-bold text-slate-900">Enquiry Details</p>
+              <p className="mt-0.5 text-sm text-slate-500">
+                {viewing.fullName || "—"} &middot; {requestTypeLabel(viewing.requestType)}
+              </p>
+            </div>
+          }
+          onClose={() => setViewing(null)}
+        >
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <InfoItem icon={Phone} label="Mobile" value={viewing.mobile} />
+            <InfoItem icon={Mail} label="Email" value={viewing.email} />
+            <InfoItem icon={Building2} label="Company" value={viewing.companyName} />
+            <InfoItem
+              icon={MapPin}
               label="Location"
               value={[viewing.city, viewing.state].filter(Boolean).join(", ")}
             />
-            <DetailRow
+            <InfoItem
+              icon={Calendar}
               label="Submitted"
               value={viewing.createdAt ? new Date(viewing.createdAt).toLocaleString() : undefined}
             />
           </div>
           {viewing.message && (
-            <div className="mt-4 rounded-lg bg-slate-50 p-4">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Message
+            <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                <MessageSquare className="h-3.5 w-3.5" /> Message
               </p>
-              <p className="text-sm text-slate-700">{viewing.message}</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+                {viewing.message}
+              </p>
             </div>
           )}
         </Modal>
