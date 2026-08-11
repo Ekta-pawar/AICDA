@@ -41,13 +41,14 @@ import { GalleryManagement as GalleryManagementPanel } from "@/components/admin/
 import { DirectoryManagement } from "@/components/admin/DirectoryManagement";
 import { EnquiryManagement } from "@/components/admin/EnquiryManagement";
 import { ExpiredMembersManagement } from "@/components/admin/ExpiredMembersManagement";
+import { BannerManagement } from "@/components/admin/BannerManagement";
 
 export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard },
   { label: "Super Admins", icon: ShieldCheck },
-  // { label: "Banner Master", icon: GalleryHorizontal },
+  { label: "Banner Master", icon: GalleryHorizontal },
   { label: "Manage Directory", icon: BookUser },
   // { label: "Management", icon: Settings2 },
   { label: "Reset Directory", icon: RotateCcw },
@@ -264,6 +265,8 @@ function AdminDashboard() {
             <DashboardOverview />
           ) : active === "Super Admins" ? (
             <SuperAdminsManagement onChangePassword={setPasswordResetTarget} />
+          ) : active === "Banner Master" ? (
+            <BannerManagement />
           ) : active === "Manage Directory" ? (
             <DirectoryManagement />
           ) : active === "Image" ? (

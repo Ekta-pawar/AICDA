@@ -1,15 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  Image as ImageIcon,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -128,7 +118,6 @@ function MemberPicker({ members, selectedMember, onSelect, disabled }) {
                     <span className="font-semibold">{member.memberId}</span> — {member.memberName}
                     {member.companyName ? ` (${member.companyName})` : ""}
                   </span>
-                  <Check className="h-3.5 w-3.5 text-transparent" />
                 </button>
               </li>
             ))

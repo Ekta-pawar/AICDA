@@ -2,9 +2,25 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, Phone, Mail } from "lucide-react";
 import { primaryNav } from "./nav-data";
+import { useBanner } from "@/hooks/use-banners";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const becomeMemberBanner = useBanner("become-member");
+  const becomeMemberStyle = becomeMemberBanner
+    ? {
+        backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url(${becomeMemberBanner})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
+  const becomeMemberStyleLight = becomeMemberBanner
+    ? {
+        backgroundImage: `linear-gradient(0deg, rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url(${becomeMemberBanner})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
   return (
     <header className="sticky top-0 z-50 shadow-[var(--shadow-elegant)]">
       {/* <div className="bg-background text-foreground text-[11px] border-b border-border">
@@ -37,6 +53,7 @@ export function SiteHeader() {
             </span>
             <Link
               to="/become-member"
+              style={becomeMemberStyle}
               className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-deep"
             >
               Become Member
@@ -70,6 +87,7 @@ export function SiteHeader() {
               <Link
                 to="/become-member"
                 onClick={() => setOpen(false)}
+                style={becomeMemberStyleLight}
                 className="block rounded-md bg-primary-foreground px-3 py-2 text-center text-sm font-semibold text-primary hover:opacity-90"
               >
                 Become Member

@@ -16,7 +16,11 @@ export const Route = createFileRoute("/contact")({
 
 function Page() {
   return (
-    <PageShell title="Contact Us" subtitle="Get in touch with the AICDA secretariat.">
+    <PageShell
+      title="Contact Us"
+      subtitle="Get in touch with the AICDA secretariat."
+      bannerKey="contact-us"
+    >
       <Prose>
         <h2 className="px-2 sm:px-2">Head Office</h2>
         <p className="px-2 sm:px-2">CB-32B, OPP. RBI COLONY, SHALIMAR BAGH, Delhi-110088</p>

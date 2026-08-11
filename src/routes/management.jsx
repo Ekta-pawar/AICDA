@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberIdCard, MemberIdCardBack } from "@/components/site/MemberIdCard";
 import { getPublicMembers } from "@/lib/member-api";
+import { getPublicPartners } from "@/lib/partner-api";
 
 export const Route = createFileRoute("/management")({
   head: () => ({
@@ -51,8 +52,32 @@ function mapMemberToBearer(member) {
   };
 }
 
+function mapPartnerToBearer(partner) {
+  return {
+    id: `partner-${partner.id}`,
+    name: partner.partnerName || "",
+    designation: partner.designation || "Partner",
+    companyName: partner.companyName || "",
+    sOf: partner.fatherName || "",
+    officeAddress: partner.companyAddress || "",
+    city: partner.city?.cityName || "",
+    state: partner.state?.stateName || "",
+    companyTel: partner.companyTelephone || "",
+    pNo: partner.packetNo || "",
+    residence: partner.residentialAddress || "",
+    residentTel: partner.residentialTelephone || "",
+    dateOfJoining: partner.dateOfJoining || "",
+    mobile: partner.mobile || "",
+    memberId: partner.partnerId || "",
+    validityFrom: partner.validityFrom || "",
+    validityTo: partner.validityTo || "",
+    photo: isDisplayableUrl(partner.photo) ? partner.photo : null,
+  };
+}
+
 function matchesSearch(bearer, query) {
-  if (!query.trim()) return true;
+  const trimmedQuery = String(query ?? "").trim();
+  if (!trimmedQuery) return true;
   const haystack = [
     bearer.memberId,
     bearer.name,
@@ -64,7 +89,7 @@ function matchesSearch(bearer, query) {
   ]
     .join(" ")
     .toLowerCase();
-  return haystack.includes(query.trim().toLowerCase());
+  return haystack.includes(trimmedQuery.toLowerCase());
 }
 
 async function combineCardCanvases(frontNode, backNode) {
@@ -340,47 +365,108 @@ function isValidityActive(validityTo) {
   return expiry >= today;
 }
 
+function SearchSuggestions({ suggestions, onSelect }) {
+  if (suggestions.length === 0) return null;
+  return (
+    <ul className="absolute left-0 top-full z-20 mt-1 max-h-72 w-full overflow-auto rounded-md border border-border bg-popover py-1 text-sm shadow-lg">
+      {suggestions.map((bearer) => (
+        <li key={bearer.id}>
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onSelect(bearer)}
+            className="flex w-full flex-col items-start px-3 py-1.5 text-left transition-colors hover:bg-accent"
+          >
+            <span className="font-semibold text-foreground">
+              {bearer.memberId} — {bearer.name}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {[bearer.designation, bearer.companyName].filter(Boolean).join(" · ")}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function Page() {
   const [search, setSearch] = useState("");
   const [members, setMembers] = useState([]);
+  const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const searchBoxRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
-    getPublicMembers()
-      .then((data) => mounted && setMembers(data))
-      .catch(() => mounted && setMembers([]))
+    Promise.all([getPublicMembers().catch(() => []), getPublicPartners().catch(() => [])])
+      .then(([memberData, partnerData]) => {
+        if (!mounted) return;
+        setMembers(memberData);
+        setPartners(partnerData);
+      })
       .finally(() => mounted && setLoading(false));
     return () => {
       mounted = false;
     };
   }, []);
 
-  const officeBearers = useMemo(() => members.map(mapMemberToBearer), [members]);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target)) {
+        setSuggestionsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const officeBearers = useMemo(
+    () => [...members.map(mapMemberToBearer), ...partners.map(mapPartnerToBearer)],
+    [members, partners],
+  );
   const filteredBearers = useMemo(
     () => officeBearers.filter((bearer) => matchesSearch(bearer, search)),
     [officeBearers, search],
   );
+  const suggestions = useMemo(() => {
+    if (!search.trim()) return [];
+    return filteredBearers.slice(0, 8);
+  }, [filteredBearers, search]);
+
+  const selectSuggestion = (bearer) => {
+    setSearch(String(bearer.memberId));
+    setSuggestionsOpen(false);
+  };
 
   return (
     <PageShell
       title="Management Committee"
       subtitle="The elected office bearers and national executive of AICDA."
+      bannerKey="management"
     >
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-black text-foreground">All Members</h2>
 
-        <div className="flex">
+        <div ref={searchBoxRef} className="relative flex">
           <Input
             type="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search"
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSuggestionsOpen(true);
+            }}
+            onFocus={() => setSuggestionsOpen(true)}
+            placeholder="Search Member ID, Partner ID or name"
             className="w-48 rounded-r-none focus-visible:ring-0 sm:w-64"
           />
           <Button type="button" variant="secondary" className="rounded-l-none border border-l-0">
             Search
           </Button>
+          {suggestionsOpen && (
+            <SearchSuggestions suggestions={suggestions} onSelect={selectSuggestion} />
+          )}
         </div>
       </div>
 

@@ -36,7 +36,16 @@ export async function api(path, options = {}) {
     : await response.text();
 
   if (!response.ok) {
+    const validationMessage = Array.isArray(data?.errors)
+      ? data.errors
+          .map((fieldError) =>
+            typeof fieldError === "string" ? fieldError : fieldError?.msg || fieldError?.message,
+          )
+          .filter(Boolean)
+          .join(" ")
+      : "";
     const message =
+      validationMessage ||
       data?.message ||
       data?.error ||
       (typeof data === "string" && data.trim()) ||

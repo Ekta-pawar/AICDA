@@ -69,7 +69,7 @@ function Page() {
 
   if (loading) {
     return (
-      <PageShell title="Association Events" subtitle="Loading...">
+      <PageShell title="Association Events" subtitle="Loading..." bannerKey="association-events">
         <GallerySkeleton />
       </PageShell>
     );
@@ -79,6 +79,7 @@ function Page() {
     <PageShell
       title="Association Events"
       subtitle="National conventions, regional meets and skill workshops organised by AICDA."
+      bannerKey="association-events"
     >
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="relative sm:w-72">

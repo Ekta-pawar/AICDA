@@ -72,6 +72,7 @@ function Page() {
     <PageShell
       title="Dealer Directory"
       subtitle="Verified new & used car dealers across India — searchable by state and city."
+      bannerKey="directory"
     >
       <Prose>
         <h2

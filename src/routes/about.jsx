@@ -25,6 +25,7 @@ function Page() {
     <PageShell
       title="About Us"
       subtitle="The story, mission and values of the All India Car Dealers Association."
+      bannerKey="about-us"
     >
       <Prose>
         <h2 className="mt-[0px] px-2 sm:px-2,">Our Journey</h2>

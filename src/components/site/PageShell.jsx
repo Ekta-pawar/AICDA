@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { Sidebar } from "./Sidebar";
+import { useBanner } from "@/hooks/use-banners";
 import banner1 from "@/assets/AICDA13-2.webp.asset.json";
 import banner2 from "@/assets/AICDA12-2.webp.asset.json";
 import banner3 from "@/assets/AICDA11-2.webp.asset.json";
@@ -18,8 +19,9 @@ function pickBanner(key) {
   return BANNERS[h % BANNERS.length].url;
 }
 
-export function PageShell({ title, subtitle, children, hideSidebar }) {
-  const bg = pickBanner(title);
+export function PageShell({ title, subtitle, children, hideSidebar, bannerKey }) {
+  const adminBanner = useBanner(bannerKey);
+  const bg = adminBanner || pickBanner(title);
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />

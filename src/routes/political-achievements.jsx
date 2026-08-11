@@ -82,6 +82,7 @@ function Page() {
     <PageShell
       title="Political Achievements"
       subtitle="Two and a half decades of policy advocacy that reshaped the Indian dealer landscape."
+      bannerKey="political-achievements"
     >
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="relative sm:w-72">

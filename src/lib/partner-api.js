@@ -37,6 +37,11 @@ export async function getPartners() {
   return Array.isArray(result) ? result : result?.partners || result?.items || [];
 }
 
+export async function getPublicPartners() {
+  const result = unwrapData(await api("/partners/public"));
+  return Array.isArray(result) ? result : result?.partners || result?.items || [];
+}
+
 export async function getPartner(id) {
   return unwrapData(await api(`/partners/${id}`));
 }

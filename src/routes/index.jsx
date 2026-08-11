@@ -4,6 +4,7 @@ import { ShieldCheck, Users, FileText, Award, Newspaper, Bold } from "lucide-rea
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Sidebar } from "@/components/site/Sidebar";
+import { useBanner } from "@/hooks/use-banners";
 import heroBanner from "@/assets/AICDA8-2.webp.asset.json";
 import aicdaLogo from "@/assets/logoAICDA.png";
 
@@ -12,6 +13,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const adminHeroBanner = useBanner("home");
+  const heroBannerUrl = adminHeroBanner || heroBanner.url;
   const features = [
     {
       icon: Users,
@@ -42,7 +45,7 @@ function Index() {
       <section className="relative overflow-hidden text-primary-foreground">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroBanner.url})` }}
+          style={{ backgroundImage: `url(${heroBannerUrl})` }}
           aria-hidden
         />
         <div className="absolute inset-0 bg-[image:var(--gradient-hero)] opacity-30" aria-hidden />

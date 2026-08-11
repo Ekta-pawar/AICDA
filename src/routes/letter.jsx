@@ -72,6 +72,7 @@ function Page() {
       <PageShell
         title="Letters & Circulars"
         subtitle="Official correspondence, member circulars and government representations."
+        bannerKey="letter"
       >
         <GallerySkeleton />
       </PageShell>
@@ -82,6 +83,7 @@ function Page() {
     <PageShell
       title="Letters & Circulars"
       subtitle="Official correspondence, member circulars and government representations."
+      bannerKey="letter"
     >
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label className="relative sm:w-72">

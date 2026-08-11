@@ -9,6 +9,8 @@ import {
   updateGalleryImage,
   uploadGalleryImage,
 } from "@/lib/gallery-api";
+import { BANNER_SECTIONS } from "@/lib/banner-sections";
+import { invalidateBannerCache } from "@/hooks/use-banners";
 
 const CATEGORIES = [
   ["ASSOCIATION", "Association"],
@@ -16,6 +18,7 @@ const CATEGORIES = [
   ["IMAGE", "Image / Video"],
   ["DIRECTORY", "Directory"],
   ["LETTER", "Letter"],
+  ["BANNER", "Banner"],
 ];
 const imageUrl = (image) =>
   image?.imageUrl ||
@@ -53,6 +56,7 @@ function Modal({ title, description, onClose, children }) {
 
 function GalleryForm({ image, onClose, onSaved }) {
   const [category, setCategory] = useState(image?.category || "ASSOCIATION");
+  const [sectionKey, setSectionKey] = useState(image?.title || BANNER_SECTIONS[0].key);
   const [file, setFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -70,8 +74,10 @@ function GalleryForm({ image, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      if (image) await updateGalleryImage(imageId(image), { file, category });
-      else await uploadGalleryImage(file, category);
+      const title = category === "BANNER" ? sectionKey : undefined;
+      if (image) await updateGalleryImage(imageId(image), { file, category, title });
+      else await uploadGalleryImage(file, category, title);
+      if (category === "BANNER" || image?.category === "BANNER") invalidateBannerCache();
       await onSaved();
     } catch (requestError) {
       setError(requestError.message || "Unable to save the image.");
@@ -101,6 +107,31 @@ function GalleryForm({ image, onClose, onSaved }) {
           ))}
         </select>
       </div>
+      {category === "BANNER" && (
+        <div>
+          <label
+            htmlFor="gallery-banner-section"
+            className="mb-2 block text-sm font-semibold text-slate-700"
+          >
+            Banner section
+          </label>
+          <select
+            id="gallery-banner-section"
+            value={sectionKey}
+            onChange={(event) => setSectionKey(event.target.value)}
+            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+          >
+            {BANNER_SECTIONS.map((section) => (
+              <option key={section.key} value={section.key}>
+                {section.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-slate-500">
+            Which page's hero banner (or the header's Become Member button) this image is for.
+          </p>
+        </div>
+      )}
       <div>
         <label htmlFor="gallery-image" className="mb-2 block text-sm font-semibold text-slate-700">
           {image ? "Replace image or video (optional)" : "Image or video"}
@@ -241,6 +272,7 @@ export function GalleryManagement() {
     setWorking(true);
     try {
       await deleteGalleryImage(imageId(deleting));
+      if (deleting?.category === "BANNER") invalidateBannerCache();
       setDeleting(null);
       await loadImages();
     } catch (requestError) {
