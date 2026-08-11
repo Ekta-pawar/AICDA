@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
+  AlertTriangle,
   BookUser,
   Building2,
   CalendarDays,
@@ -39,6 +40,7 @@ import { uploadGalleryImage } from "@/lib/gallery-api";
 import { GalleryManagement as GalleryManagementPanel } from "@/components/admin/GalleryManagement";
 import { DirectoryManagement } from "@/components/admin/DirectoryManagement";
 import { EnquiryManagement } from "@/components/admin/EnquiryManagement";
+import { ExpiredMembersManagement } from "@/components/admin/ExpiredMembersManagement";
 
 export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
@@ -53,6 +55,7 @@ const navigation = [
   // { label: "Association Event", icon: CalendarDays },
   // { label: "Political Event", icon: Landmark },
   { label: "Image", icon: Image },
+  { label: "Expired Members", icon: AlertTriangle },
 
   { label: "Our Staff", icon: UserCog },
 
@@ -265,6 +268,8 @@ function AdminDashboard() {
             <DirectoryManagement />
           ) : active === "Image" ? (
             <GalleryManagementPanel />
+          ) : active === "Expired Members" ? (
+            <ExpiredMembersManagement />
           ) : active === "Enquiries" ? (
             <EnquiryManagement />
           ) : (

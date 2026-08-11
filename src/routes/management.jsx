@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Loader2, Share2, ThumbsUp, User } from "lucide-react";
-import { toBlob, toJpeg } from "html-to-image";
+import { toCanvas } from "html-to-image";
 import { toast } from "sonner";
 import { PageShell } from "@/components/site/PageShell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MemberIdCard } from "@/components/site/MemberIdCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MemberIdCard, MemberIdCardBack } from "@/components/site/MemberIdCard";
 import { getPublicMembers } from "@/lib/member-api";
 
 export const Route = createFileRoute("/management")({
@@ -32,6 +33,7 @@ function mapMemberToBearer(member) {
     id: member.id,
     name: member.memberName || "",
     designation: member.designation || "",
+    companyName: member.companyName || "",
     sOf: member.fatherName || "",
     officeAddress: member.companyAddress || "",
     city: member.city?.cityName || "",
@@ -52,6 +54,7 @@ function mapMemberToBearer(member) {
 function matchesSearch(bearer, query) {
   if (!query.trim()) return true;
   const haystack = [
+    bearer.memberId,
     bearer.name,
     bearer.designation,
     bearer.city,
@@ -64,14 +67,40 @@ function matchesSearch(bearer, query) {
   return haystack.includes(query.trim().toLowerCase());
 }
 
-async function downloadCardAsJpg(node, fileName) {
-  const dataUrl = await toJpeg(node, {
-    quality: 0.95,
-    pixelRatio: 2,
-    backgroundColor: "#ffffff",
-    cacheBust: true,
-    filter: (el) => el.dataset?.exportIgnore !== "true",
-  });
+async function combineCardCanvases(frontNode, backNode) {
+  const [frontCanvas, backCanvas] = await Promise.all([
+    toCanvas(frontNode, {
+      pixelRatio: 2,
+      backgroundColor: "#ffffff",
+      cacheBust: true,
+      filter: (el) => el.dataset?.exportIgnore !== "true",
+    }),
+    toCanvas(backNode, { pixelRatio: 2, backgroundColor: "#ffffff", cacheBust: true }),
+  ]);
+
+  const gap = 48;
+  const width = Math.max(frontCanvas.width, backCanvas.width);
+  const height = frontCanvas.height + gap + backCanvas.height;
+
+  const combined = document.createElement("canvas");
+  combined.width = width;
+  combined.height = height;
+  const ctx = combined.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(frontCanvas, (width - frontCanvas.width) / 2, 0);
+  ctx.drawImage(backCanvas, (width - backCanvas.width) / 2, frontCanvas.height + gap);
+
+  return combined;
+}
+
+function canvasToBlob(canvas, quality = 0.95) {
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+}
+
+async function downloadCombinedCard(frontNode, backNode, fileName) {
+  const canvas = await combineCardCanvases(frontNode, backNode);
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
   const a = document.createElement("a");
   a.href = dataUrl;
   a.download = fileName;
@@ -92,26 +121,20 @@ function cardSummary(bearer) {
     .join("\n");
 }
 
-async function shareCard(bearer, node) {
+async function shareCard(bearer, frontNode, backNode) {
   const title = bearer.name.trim() || "AICDA Member";
   const text = cardSummary(bearer);
+  const baseName = title.replace(/\s+/g, "_");
 
   let file = null;
-  if (node) {
-    try {
-      const blob = await toBlob(node, {
-        quality: 0.95,
-        pixelRatio: 2,
-        backgroundColor: "#ffffff",
-        cacheBust: true,
-      });
-      if (blob) {
-        const fileName = `${title.replace(/\s+/g, "_")}.jpg`;
-        file = new File([blob], fileName, { type: "image/jpeg" });
-      }
-    } catch {
-      // fall through to text sharing below
+  try {
+    if (frontNode && backNode) {
+      const canvas = await combineCardCanvases(frontNode, backNode);
+      const blob = await canvasToBlob(canvas);
+      if (blob) file = new File([blob], `${baseName}_id_card.jpg`, { type: "image/jpeg" });
     }
+  } catch {
+    // fall through to text sharing below
   }
 
   if (file && navigator.canShare?.({ files: [file] })) {
@@ -152,15 +175,16 @@ function DetailRow({ label, value }) {
 
 function OfficeBearerSlide({ bearer }) {
   const idCardRef = useRef(null);
+  const backCardRef = useRef(null);
   const [exporting, setExporting] = useState(false);
   const [sharing, setSharing] = useState(false);
 
   const handleDownload = async () => {
-    if (!idCardRef.current || exporting) return;
+    if (!idCardRef.current || !backCardRef.current || exporting) return;
     setExporting(true);
     try {
-      const fileName = `${bearer.name.trim().replace(/\s+/g, "_") || "member"}.jpg`;
-      await downloadCardAsJpg(idCardRef.current, fileName);
+      const baseName = bearer.name.trim().replace(/\s+/g, "_") || "member";
+      await downloadCombinedCard(idCardRef.current, backCardRef.current, `${baseName}_id_card.jpg`);
     } catch {
       toast.error("Couldn't generate the image. Please try again.");
     } finally {
@@ -172,7 +196,7 @@ function OfficeBearerSlide({ bearer }) {
     if (sharing) return;
     setSharing(true);
     try {
-      await shareCard(bearer, idCardRef.current);
+      await shareCard(bearer, idCardRef.current, backCardRef.current);
     } finally {
       setSharing(false);
     }
@@ -253,7 +277,34 @@ function OfficeBearerSlide({ bearer }) {
       {/* Rendered off-screen purely so it can be captured as the downloaded JPG */}
       <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "-9999px", zIndex: -1 }}>
         <MemberIdCard bearer={bearer} cardRef={idCardRef} />
+        <MemberIdCardBack bearer={bearer} cardRef={backCardRef} />
       </div>
+    </div>
+  );
+}
+
+function OfficeBearerSlideSkeleton() {
+  return (
+    <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-[220px_1fr]">
+      <Skeleton className="h-45 w-full rounded-lg" />
+      <div className="rounded-xl border border-border bg-card p-6 shadow-(--shadow-card)">
+        <Skeleton className="mx-auto h-5 w-32" />
+        <div className="mt-4 space-y-3">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Skeleton key={index} className="h-3.5 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OfficeBearersListSkeleton() {
+  return (
+    <div className="mt-4 space-y-6">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <OfficeBearerSlideSkeleton key={index} />
+      ))}
     </div>
   );
 }
@@ -333,13 +384,7 @@ function Page() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          Loading office bearers…
-        </p>
-      ) : (
-        <OfficeBearersList bearers={filteredBearers} />
-      )}
+      {loading ? <OfficeBearersListSkeleton /> : <OfficeBearersList bearers={filteredBearers} />}
     </PageShell>
   );
 }

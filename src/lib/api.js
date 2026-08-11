@@ -10,20 +10,25 @@ export class ApiError extends Error {
 
 export async function api(path, options = {}) {
   const { headers, body, ...requestOptions } = options;
-  console.log(API_BASE_URL);
   const isFormData = body instanceof FormData;
   const token =
     typeof window !== "undefined" ? window.localStorage.getItem("aicda_access_token") : null;
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body,
-    ...requestOptions,
-  });
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      credentials: "include",
+      headers: {
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body,
+      ...requestOptions,
+    });
+  } catch {
+    throw new ApiError("Could not reach the server. Check your connection and try again.", 0, null);
+  }
 
   const contentType = response.headers.get("content-type") || "";
   const data = contentType.includes("application/json")
@@ -31,7 +36,11 @@ export async function api(path, options = {}) {
     : await response.text();
 
   if (!response.ok) {
-    const message = data?.message || data?.error || "Request failed. Please try again.";
+    const message =
+      data?.message ||
+      data?.error ||
+      (typeof data === "string" && data.trim()) ||
+      `Request failed with status ${response.status}.`;
     throw new ApiError(message, response.status, data);
   }
 

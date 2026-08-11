@@ -322,7 +322,9 @@ export function DirectoryManagement() {
       await loadMembers();
       closeForm();
     } catch (requestError) {
-      setError(requestError.message || "Could not save member.");
+      const message = requestError.message || "Could not save member.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -438,204 +440,183 @@ export function DirectoryManagement() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 border border-slate-300 sm:grid-cols-2">
-              <div className="flex flex-col divide-y divide-slate-300 border-b border-slate-300 sm:border-b-0 sm:border-r sm:border-r-slate-300">
-                  <FieldRow label="Member Photo">
-                  <div className="flex items-center gap-3">
-                    {photoPreview || existingPhotoUrl ? (
-                      <img
-                        src={photoPreview || existingPhotoUrl}
-                        alt="Member preview"
-                        className="h-14 w-14 shrink-0 rounded-[3px] border border-slate-300 object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[3px] border border-dashed border-slate-300 text-slate-300">
-                        <ImageIcon className="h-5 w-5" />
-                      </div>
-                    )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => updateField("photo", e.target.files?.[0] || null)}
-                      className="block w-full flex-1 text-[13px] text-slate-600 file:mr-3 file:rounded-[3px] file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1 file:text-[13px] file:font-semibold file:text-slate-700 hover:file:bg-slate-100"
+            <div className="flex flex-col divide-y divide-slate-300 border border-slate-300">
+              <FieldRow label="Member Photo">
+                <div className="flex items-center gap-3">
+                  {photoPreview || existingPhotoUrl ? (
+                    <img
+                      src={photoPreview || existingPhotoUrl}
+                      alt="Member preview"
+                      className="h-14 w-14 shrink-0 rounded-[3px] border border-slate-300 object-cover"
                     />
-                  </div>
-                </FieldRow>
-               
-                <FieldRow label="Member ID" required shaded>
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[3px] border border-dashed border-slate-300 text-slate-300">
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                  )}
                   <input
-                    value={form.memberId}
-                    onChange={(e) => updateField("memberId", e.target.value)}
-                    className={inputClass}
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => updateField("photo", e.target.files?.[0] || null)}
+                    className="block w-full flex-1 text-[13px] text-slate-600 file:mr-3 file:rounded-[3px] file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1 file:text-[13px] file:font-semibold file:text-slate-700 hover:file:bg-slate-100"
                   />
-                </FieldRow>
-                <FieldRow label="Member Name" required>
-                  <input
-                    value={form.memberName}
-                    onChange={(e) => updateField("memberName", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Father's Name" shaded>
-                  <input
-                    value={form.fatherName}
-                    onChange={(e) => updateField("fatherName", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-             
-                <FieldRow label="Residential Address" shaded>
-                  <textarea
-                    value={form.residentialAddress}
-                    onChange={(e) => updateField("residentialAddress", e.target.value)}
-                    rows={3}
-                    className="w-full rounded-[3px] border border-slate-300 bg-white px-2 py-1 text-[13px] text-slate-800 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-200"
-                  />
-                </FieldRow>
-                <FieldRow label="Mobile">
-                  <input
-                    value={form.mobile}
-                    onChange={(e) => updateField("mobile", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Residential Telephone" shaded>
-                  <input
-                    value={form.residentialTelephone}
-                    onChange={(e) => updateField("residentialTelephone", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Pan Card No.">
-                  <input
-                    value={form.panCardNo}
-                    onChange={(e) => updateField("panCardNo", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Designation" shaded>
-                  <DesignationCombobox
-                    value={form.designation}
-                    onChange={(value) => updateField("designation", value)}
-                  />
-                </FieldRow>
-              </div>
+                </div>
+              </FieldRow>
 
-              <div className="flex flex-col divide-y divide-slate-300">
-                <FieldRow label="Company Name" shaded>
-                  <input
-                    value={form.companyName}
-                    onChange={(e) => updateField("companyName", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Company Address">
-                  <input
-                    value={form.companyAddress}
-                    onChange={(e) => updateField("companyAddress", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="State" shaded>
-                  <select
-                    value={form.state}
-                    onChange={(e) => updateField("state", e.target.value)}
-                    className={inputClass}
+              <FieldRow label="Member ID" required shaded>
+                <input
+                  value={form.memberId}
+                  onChange={(e) => updateField("memberId", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Member Name" required>
+                <input
+                  value={form.memberName}
+                  onChange={(e) => updateField("memberName", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Father's Name" shaded>
+                <input
+                  value={form.fatherName}
+                  onChange={(e) => updateField("fatherName", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+
+              <FieldRow label="Company Name" shaded>
+                <input
+                  value={form.companyName}
+                  onChange={(e) => updateField("companyName", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Company Address">
+                <input
+                  value={form.companyAddress}
+                  onChange={(e) => updateField("companyAddress", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="State" shaded>
+                <select
+                  value={form.state}
+                  onChange={(e) => updateField("state", e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">--Select State--</option>
+                  {STATES.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
+              </FieldRow>
+              <FieldRow label="City">
+                <input
+                  value={form.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Residential Address" shaded>
+                <textarea
+                  value={form.residentialAddress}
+                  onChange={(e) => updateField("residentialAddress", e.target.value)}
+                  rows={3}
+                  className="w-full rounded-[3px] border border-slate-300 bg-white px-2 py-1 text-[13px] text-slate-800 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-200"
+                />
+              </FieldRow>
+              <FieldRow label="Mobile">
+                <input
+                  value={form.mobile}
+                  onChange={(e) => updateField("mobile", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Residential Telephone" shaded>
+                <input
+                  value={form.residentialTelephone}
+                  onChange={(e) => updateField("residentialTelephone", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Company Tel.">
+                <input
+                  value={form.companyTelephone}
+                  onChange={(e) => updateField("companyTelephone", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Packet No." shaded>
+                <input
+                  value={form.packetNo}
+                  onChange={(e) => updateField("packetNo", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Pan Card No.">
+                <input
+                  value={form.panCardNo}
+                  onChange={(e) => updateField("panCardNo", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Aadhar Card No." shaded>
+                <input
+                  value={form.aadharNo}
+                  onChange={(e) => updateField("aadharNo", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Date of Joining">
+                <input
+                  type="date"
+                  value={form.dateOfJoining}
+                  onChange={(e) => updateField("dateOfJoining", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Validity From" shaded>
+                <input
+                  type="date"
+                  value={form.validityFrom}
+                  onChange={(e) => updateField("validityFrom", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Validity To">
+                <input
+                  type="date"
+                  value={form.validityTo}
+                  onChange={(e) => updateField("validityTo", e.target.value)}
+                  className={inputClass}
+                />
+              </FieldRow>
+              <FieldRow label="Designation" shaded>
+                <DesignationCombobox
+                  value={form.designation}
+                  onChange={(value) => updateField("designation", value)}
+                />
+              </FieldRow>
+              <div className="bg-white px-3 py-2">
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-blue-600 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                   >
-                    <option value="">--Select State--</option>
-                    {STATES.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                </FieldRow>
-                <FieldRow label="City">
-                  <input
-                    value={form.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <div className="space-y-2 bg-rose-50/70 px-3 py-2">
-                  <div>
-                    <label className="mb-1 block text-[13px] font-semibold text-slate-700">
-                      Company Tel. :
-                    </label>
-                    <input
-                      value={form.companyTelephone}
-                      onChange={(e) => updateField("companyTelephone", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[13px] font-semibold text-slate-700">
-                      Packet No. :
-                    </label>
-                    <input
-                      value={form.packetNo}
-                      onChange={(e) => updateField("packetNo", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                <FieldRow label="Date of Joining">
-                  <input
-                    type="date"
-                    value={form.dateOfJoining}
-                    onChange={(e) => updateField("dateOfJoining", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <FieldRow label="Aadhar Card No." shaded>
-                  <input
-                    value={form.aadharNo}
-                    onChange={(e) => updateField("aadharNo", e.target.value)}
-                    className={inputClass}
-                  />
-                </FieldRow>
-                <div className="space-y-2 bg-white px-3 py-2">
-                  <div>
-                    <label className="mb-1 block text-[13px] font-semibold text-slate-700">
-                      Validity From :
-                    </label>
-                    <input
-                      type="date"
-                      value={form.validityFrom}
-                      onChange={(e) => updateField("validityFrom", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-[13px] font-semibold text-slate-700">
-                      Validity To :
-                    </label>
-                    <input
-                      type="date"
-                      value={form.validityTo}
-                      onChange={(e) => updateField("validityTo", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                <div className="bg-rose-50/70 px-3 py-2">
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-red-900 px-4 text-[13px] font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-                    >
-                      {saving ? "Saving…" : editingId ? "Save Member" : "Add Member"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resetForm}
-                      className="h-8 rounded-[3px] bg-red-600 px-4 text-[13px] font-semibold text-white hover:bg-red-700"
-                    >
-                      Reset
-                    </button>
-                  </div>
+                    {saving ? "Saving…" : editingId ? "Save Member" : "Add Member"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="h-8 rounded-[3px] bg-red-600 px-4 text-[13px] font-semibold text-white hover:bg-red-700"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
             </div>
