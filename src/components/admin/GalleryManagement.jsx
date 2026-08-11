@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ImageOff, LoaderCircle, Pencil, Play, Plus, Search, Trash2, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   deleteGalleryImage,
   getGalleryImages,
@@ -156,6 +157,44 @@ function GalleryForm({ image, onClose, onSaved }) {
 
 const PAGE_SIZE = 12;
 
+function GalleryTableSkeleton({ rows = 5 }) {
+  return (
+    <div className="mt-4 overflow-x-auto scrollbar-hide rounded-xl border border-slate-200">
+      <table className="w-full min-w-150 text-left text-sm">
+        <thead className="bg-slate-50 text-slate-500">
+          <tr>
+            <th className="px-3 py-2.5">Image</th>
+            <th className="px-3 py-2.5">Category</th>
+            <th className="px-3 py-2.5">Uploaded</th>
+            <th className="px-3 py-2.5 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: rows }).map((_, index) => (
+            <tr key={index} className="border-t border-slate-100">
+              <td className="px-3 py-2.5">
+                <Skeleton className="h-14 w-14 rounded-md" />
+              </td>
+              <td className="px-3 py-2.5">
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </td>
+              <td className="px-3 py-2.5">
+                <Skeleton className="h-4 w-20" />
+              </td>
+              <td className="px-3 py-2.5">
+                <div className="flex justify-end gap-3">
+                  <Skeleton className="h-4 w-10" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function GalleryManagement() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -260,9 +299,7 @@ export function GalleryManagement() {
           </p>
         )}
         {loading ? (
-          <div className="flex min-h-60 items-center justify-center gap-2 text-sm text-slate-500">
-            <LoaderCircle className="h-5 w-5 animate-spin" /> Loading images…
-          </div>
+          <GalleryTableSkeleton />
         ) : visibleImages.length === 0 ? (
           <div className="mt-4 flex min-h-60 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300">
             <ImageOff className="h-9 w-9 text-slate-300" />
