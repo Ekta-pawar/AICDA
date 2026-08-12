@@ -19,12 +19,13 @@ function buildMemberFormData(member) {
     aadharNo: member.aadharNo,
     state: member.state,
     city: member.city,
-    validityFrom: member.validityFrom,
     validityTo: member.validityTo,
+    amount: member.amount,
+    note: member.note,
   };
 
   Object.entries(fields).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) formData.append(key, value);
+    if (value !== undefined && value !== null && value !== "") formData.append(key, value);
   });
 
   if (member.photo instanceof File) formData.append("photo", member.photo);
@@ -32,12 +33,35 @@ function buildMemberFormData(member) {
   return formData;
 }
 
-export async function getMembers() {
-  const result = unwrapData(await api("/members"));
-  return Array.isArray(result) ? result : result?.members || result?.items || [];
+export async function getMembers(params = {}) {
+  const query = new URLSearchParams();
+  if (params.search?.trim()) query.append("search", params.search.trim());
+  if (params.status && params.status !== "all") query.append("status", params.status);
+  if (params.page) query.append("page", String(params.page));
+  if (params.limit) query.append("limit", String(params.limit));
+
+  const response = await api(`/members?${query.toString()}`);
+  const members = unwrapData(response);
+
+  return {
+    members: Array.isArray(members) ? members : members?.members || members?.items || [],
+    pagination: response?.pagination || {
+      page: params.page || 1,
+      limit: params.limit || 10,
+      total: Array.isArray(members) ? members.length : 0,
+      totalPages: 1,
+    },
+    stats: response?.stats || null,
+  };
 }
 
 export async function getMember(id) {
+  return unwrapData(await api(`/members/${id}`));
+}
+
+// Same endpoint as getMember — the backend includes partners + renewal
+// history on every GET /members/:id, so the details page reuses it.
+export async function getMemberDetails(id) {
   return unwrapData(await api(`/members/${id}`));
 }
 
@@ -66,6 +90,15 @@ export async function updateMember(id, member) {
 
 export async function toggleMemberStatus(id) {
   return unwrapData(await api(`/members/${id}/status`, { method: "PATCH" }));
+}
+
+export async function renewMember(id, { validityTo, amount, note }) {
+  return unwrapData(
+    await api(`/members/${id}/renew`, {
+      method: "PATCH",
+      body: JSON.stringify({ validityTo, amount, note }),
+    }),
+  );
 }
 
 export async function deleteMember(id) {

@@ -20,6 +20,7 @@ import { Route as AssociationEventsRouteImport } from './routes/association-even
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as CategoriesVehicleSafetyRouteImport } from './routes/categories.vehicle-safety'
 import { Route as CategoriesUsedVehicleChecklistRouteImport } from './routes/categories.used-vehicle-checklist'
 import { Route as CategoriesTransferOwnershipRouteImport } from './routes/categories.transfer-ownership'
@@ -38,7 +39,22 @@ import { Route as CategoriesFeesStructureRouteImport } from './routes/categories
 import { Route as CategoriesEmiCalculatorRouteImport } from './routes/categories.emi-calculator'
 import { Route as CategoriesDuplicateRcRouteImport } from './routes/categories.duplicate-rc'
 import { Route as CategoriesAuthorizedDealersRouteImport } from './routes/categories.authorized-dealers'
+import { Route as AdminSuperAdminsRouteImport } from './routes/admin.super-admins'
+import { Route as AdminResetManagementRouteImport } from './routes/admin.reset-management'
+import { Route as AdminResetDirectoryRouteImport } from './routes/admin.reset-directory'
+import { Route as AdminOurStaffRouteImport } from './routes/admin.our-staff'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminImageRouteImport } from './routes/admin.image'
+import { Route as AdminExpiredMembersRouteImport } from './routes/admin.expired-members'
+import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
+import { Route as AdminDirectoryRouteImport } from './routes/admin.directory'
+import { Route as AdminComplaintRouteImport } from './routes/admin.complaint'
+import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as AdminDirectoryIndexRouteImport } from './routes/admin.directory.index'
+import { Route as AdminDirectoryPartenerRouteImport } from './routes/admin.directory.partener'
+import { Route as AdminDirectoryCreateRouteImport } from './routes/admin.directory.create'
+import { Route as AdminDirectorySlugDetailsRouteImport } from './routes/admin.directory.$slug.details'
+import { Route as AdminDirectoryPartnerSlugDetailsRouteImport } from './routes/admin.directory.partner.$slug.details'
 
 const PoliticalAchievementsRoute = PoliticalAchievementsRouteImport.update({
   id: '/political-achievements',
@@ -94,6 +110,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const CategoriesVehicleSafetyRoute = CategoriesVehicleSafetyRouteImport.update({
   id: '/categories/vehicle-safety',
@@ -192,11 +213,88 @@ const CategoriesAuthorizedDealersRoute =
     path: '/categories/authorized-dealers',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminSuperAdminsRoute = AdminSuperAdminsRouteImport.update({
+  id: '/super-admins',
+  path: '/super-admins',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResetManagementRoute = AdminResetManagementRouteImport.update({
+  id: '/reset-management',
+  path: '/reset-management',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminResetDirectoryRoute = AdminResetDirectoryRouteImport.update({
+  id: '/reset-directory',
+  path: '/reset-directory',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOurStaffRoute = AdminOurStaffRouteImport.update({
+  id: '/our-staff',
+  path: '/our-staff',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminImageRoute = AdminImageRouteImport.update({
+  id: '/image',
+  path: '/image',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExpiredMembersRoute = AdminExpiredMembersRouteImport.update({
+  id: '/expired-members',
+  path: '/expired-members',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEnquiriesRoute = AdminEnquiriesRouteImport.update({
+  id: '/enquiries',
+  path: '/enquiries',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDirectoryRoute = AdminDirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminComplaintRoute = AdminComplaintRouteImport.update({
+  id: '/complaint',
+  path: '/complaint',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDirectoryIndexRoute = AdminDirectoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminDirectoryRoute,
+} as any)
+const AdminDirectoryPartenerRoute = AdminDirectoryPartenerRouteImport.update({
+  id: '/partener',
+  path: '/partener',
+  getParentRoute: () => AdminDirectoryRoute,
+} as any)
+const AdminDirectoryCreateRoute = AdminDirectoryCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => AdminDirectoryRoute,
+} as any)
+const AdminDirectorySlugDetailsRoute =
+  AdminDirectorySlugDetailsRouteImport.update({
+    id: '/$slug/details',
+    path: '/$slug/details',
+    getParentRoute: () => AdminDirectoryRoute,
+  } as any)
+const AdminDirectoryPartnerSlugDetailsRoute =
+  AdminDirectoryPartnerSlugDetailsRouteImport.update({
+    id: '/partner/$slug/details',
+    path: '/partner/$slug/details',
+    getParentRoute: () => AdminDirectoryRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -210,7 +308,17 @@ export interface FileRoutesByFullPath {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/complaint': typeof AdminComplaintRoute
+  '/admin/directory': typeof AdminDirectoryRouteWithChildren
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/expired-members': typeof AdminExpiredMembersRoute
+  '/admin/image': typeof AdminImageRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/our-staff': typeof AdminOurStaffRoute
+  '/admin/reset-directory': typeof AdminResetDirectoryRoute
+  '/admin/reset-management': typeof AdminResetManagementRoute
+  '/admin/super-admins': typeof AdminSuperAdminsRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -229,11 +337,16 @@ export interface FileRoutesByFullPath {
   '/categories/transfer-ownership': typeof CategoriesTransferOwnershipRoute
   '/categories/used-vehicle-checklist': typeof CategoriesUsedVehicleChecklistRoute
   '/categories/vehicle-safety': typeof CategoriesVehicleSafetyRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/directory/create': typeof AdminDirectoryCreateRoute
+  '/admin/directory/partener': typeof AdminDirectoryPartenerRoute
+  '/admin/directory/': typeof AdminDirectoryIndexRoute
+  '/admin/directory/$slug/details': typeof AdminDirectorySlugDetailsRoute
+  '/admin/directory/partner/$slug/details': typeof AdminDirectoryPartnerSlugDetailsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
   '/association-events': typeof AssociationEventsRoute
   '/become-member': typeof BecomeMemberRoute
   '/contact': typeof ContactRoute
@@ -242,7 +355,16 @@ export interface FileRoutesByTo {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/complaint': typeof AdminComplaintRoute
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/expired-members': typeof AdminExpiredMembersRoute
+  '/admin/image': typeof AdminImageRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/our-staff': typeof AdminOurStaffRoute
+  '/admin/reset-directory': typeof AdminResetDirectoryRoute
+  '/admin/reset-management': typeof AdminResetManagementRoute
+  '/admin/super-admins': typeof AdminSuperAdminsRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -261,6 +383,12 @@ export interface FileRoutesByTo {
   '/categories/transfer-ownership': typeof CategoriesTransferOwnershipRoute
   '/categories/used-vehicle-checklist': typeof CategoriesUsedVehicleChecklistRoute
   '/categories/vehicle-safety': typeof CategoriesVehicleSafetyRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/directory/create': typeof AdminDirectoryCreateRoute
+  '/admin/directory/partener': typeof AdminDirectoryPartenerRoute
+  '/admin/directory': typeof AdminDirectoryIndexRoute
+  '/admin/directory/$slug/details': typeof AdminDirectorySlugDetailsRoute
+  '/admin/directory/partner/$slug/details': typeof AdminDirectoryPartnerSlugDetailsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -275,7 +403,17 @@ export interface FileRoutesById {
   '/letter': typeof LetterRoute
   '/management': typeof ManagementRoute
   '/political-achievements': typeof PoliticalAchievementsRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/complaint': typeof AdminComplaintRoute
+  '/admin/directory': typeof AdminDirectoryRouteWithChildren
+  '/admin/enquiries': typeof AdminEnquiriesRoute
+  '/admin/expired-members': typeof AdminExpiredMembersRoute
+  '/admin/image': typeof AdminImageRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/our-staff': typeof AdminOurStaffRoute
+  '/admin/reset-directory': typeof AdminResetDirectoryRoute
+  '/admin/reset-management': typeof AdminResetManagementRoute
+  '/admin/super-admins': typeof AdminSuperAdminsRoute
   '/categories/authorized-dealers': typeof CategoriesAuthorizedDealersRoute
   '/categories/duplicate-rc': typeof CategoriesDuplicateRcRoute
   '/categories/emi-calculator': typeof CategoriesEmiCalculatorRoute
@@ -294,6 +432,12 @@ export interface FileRoutesById {
   '/categories/transfer-ownership': typeof CategoriesTransferOwnershipRoute
   '/categories/used-vehicle-checklist': typeof CategoriesUsedVehicleChecklistRoute
   '/categories/vehicle-safety': typeof CategoriesVehicleSafetyRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/directory/create': typeof AdminDirectoryCreateRoute
+  '/admin/directory/partener': typeof AdminDirectoryPartenerRoute
+  '/admin/directory/': typeof AdminDirectoryIndexRoute
+  '/admin/directory/$slug/details': typeof AdminDirectorySlugDetailsRoute
+  '/admin/directory/partner/$slug/details': typeof AdminDirectoryPartnerSlugDetailsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -309,7 +453,17 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/banners'
+    | '/admin/complaint'
+    | '/admin/directory'
+    | '/admin/enquiries'
+    | '/admin/expired-members'
+    | '/admin/image'
     | '/admin/login'
+    | '/admin/our-staff'
+    | '/admin/reset-directory'
+    | '/admin/reset-management'
+    | '/admin/super-admins'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -328,11 +482,16 @@ export interface FileRouteTypes {
     | '/categories/transfer-ownership'
     | '/categories/used-vehicle-checklist'
     | '/categories/vehicle-safety'
+    | '/admin/'
+    | '/admin/directory/create'
+    | '/admin/directory/partener'
+    | '/admin/directory/'
+    | '/admin/directory/$slug/details'
+    | '/admin/directory/partner/$slug/details'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/association-events'
     | '/become-member'
     | '/contact'
@@ -341,7 +500,16 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/banners'
+    | '/admin/complaint'
+    | '/admin/enquiries'
+    | '/admin/expired-members'
+    | '/admin/image'
     | '/admin/login'
+    | '/admin/our-staff'
+    | '/admin/reset-directory'
+    | '/admin/reset-management'
+    | '/admin/super-admins'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -360,6 +528,12 @@ export interface FileRouteTypes {
     | '/categories/transfer-ownership'
     | '/categories/used-vehicle-checklist'
     | '/categories/vehicle-safety'
+    | '/admin'
+    | '/admin/directory/create'
+    | '/admin/directory/partener'
+    | '/admin/directory'
+    | '/admin/directory/$slug/details'
+    | '/admin/directory/partner/$slug/details'
   id:
     | '__root__'
     | '/'
@@ -373,7 +547,17 @@ export interface FileRouteTypes {
     | '/letter'
     | '/management'
     | '/political-achievements'
+    | '/admin/banners'
+    | '/admin/complaint'
+    | '/admin/directory'
+    | '/admin/enquiries'
+    | '/admin/expired-members'
+    | '/admin/image'
     | '/admin/login'
+    | '/admin/our-staff'
+    | '/admin/reset-directory'
+    | '/admin/reset-management'
+    | '/admin/super-admins'
     | '/categories/authorized-dealers'
     | '/categories/duplicate-rc'
     | '/categories/emi-calculator'
@@ -392,6 +576,12 @@ export interface FileRouteTypes {
     | '/categories/transfer-ownership'
     | '/categories/used-vehicle-checklist'
     | '/categories/vehicle-safety'
+    | '/admin/'
+    | '/admin/directory/create'
+    | '/admin/directory/partener'
+    | '/admin/directory/'
+    | '/admin/directory/$slug/details'
+    | '/admin/directory/partner/$slug/details'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -504,6 +694,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/categories/vehicle-safety': {
       id: '/categories/vehicle-safety'
@@ -631,6 +828,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesAuthorizedDealersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/super-admins': {
+      id: '/admin/super-admins'
+      path: '/super-admins'
+      fullPath: '/admin/super-admins'
+      preLoaderRoute: typeof AdminSuperAdminsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reset-management': {
+      id: '/admin/reset-management'
+      path: '/reset-management'
+      fullPath: '/admin/reset-management'
+      preLoaderRoute: typeof AdminResetManagementRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reset-directory': {
+      id: '/admin/reset-directory'
+      path: '/reset-directory'
+      fullPath: '/admin/reset-directory'
+      preLoaderRoute: typeof AdminResetDirectoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/our-staff': {
+      id: '/admin/our-staff'
+      path: '/our-staff'
+      fullPath: '/admin/our-staff'
+      preLoaderRoute: typeof AdminOurStaffRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -638,15 +863,134 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/image': {
+      id: '/admin/image'
+      path: '/image'
+      fullPath: '/admin/image'
+      preLoaderRoute: typeof AdminImageRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/expired-members': {
+      id: '/admin/expired-members'
+      path: '/expired-members'
+      fullPath: '/admin/expired-members'
+      preLoaderRoute: typeof AdminExpiredMembersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/enquiries': {
+      id: '/admin/enquiries'
+      path: '/enquiries'
+      fullPath: '/admin/enquiries'
+      preLoaderRoute: typeof AdminEnquiriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/directory': {
+      id: '/admin/directory'
+      path: '/directory'
+      fullPath: '/admin/directory'
+      preLoaderRoute: typeof AdminDirectoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/complaint': {
+      id: '/admin/complaint'
+      path: '/complaint'
+      fullPath: '/admin/complaint'
+      preLoaderRoute: typeof AdminComplaintRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/directory/': {
+      id: '/admin/directory/'
+      path: '/'
+      fullPath: '/admin/directory/'
+      preLoaderRoute: typeof AdminDirectoryIndexRouteImport
+      parentRoute: typeof AdminDirectoryRoute
+    }
+    '/admin/directory/partener': {
+      id: '/admin/directory/partener'
+      path: '/partener'
+      fullPath: '/admin/directory/partener'
+      preLoaderRoute: typeof AdminDirectoryPartenerRouteImport
+      parentRoute: typeof AdminDirectoryRoute
+    }
+    '/admin/directory/create': {
+      id: '/admin/directory/create'
+      path: '/create'
+      fullPath: '/admin/directory/create'
+      preLoaderRoute: typeof AdminDirectoryCreateRouteImport
+      parentRoute: typeof AdminDirectoryRoute
+    }
+    '/admin/directory/$slug/details': {
+      id: '/admin/directory/$slug/details'
+      path: '/$slug/details'
+      fullPath: '/admin/directory/$slug/details'
+      preLoaderRoute: typeof AdminDirectorySlugDetailsRouteImport
+      parentRoute: typeof AdminDirectoryRoute
+    }
+    '/admin/directory/partner/$slug/details': {
+      id: '/admin/directory/partner/$slug/details'
+      path: '/partner/$slug/details'
+      fullPath: '/admin/directory/partner/$slug/details'
+      preLoaderRoute: typeof AdminDirectoryPartnerSlugDetailsRouteImport
+      parentRoute: typeof AdminDirectoryRoute
+    }
   }
 }
 
+interface AdminDirectoryRouteChildren {
+  AdminDirectoryCreateRoute: typeof AdminDirectoryCreateRoute
+  AdminDirectoryPartenerRoute: typeof AdminDirectoryPartenerRoute
+  AdminDirectoryIndexRoute: typeof AdminDirectoryIndexRoute
+  AdminDirectorySlugDetailsRoute: typeof AdminDirectorySlugDetailsRoute
+  AdminDirectoryPartnerSlugDetailsRoute: typeof AdminDirectoryPartnerSlugDetailsRoute
+}
+
+const AdminDirectoryRouteChildren: AdminDirectoryRouteChildren = {
+  AdminDirectoryCreateRoute: AdminDirectoryCreateRoute,
+  AdminDirectoryPartenerRoute: AdminDirectoryPartenerRoute,
+  AdminDirectoryIndexRoute: AdminDirectoryIndexRoute,
+  AdminDirectorySlugDetailsRoute: AdminDirectorySlugDetailsRoute,
+  AdminDirectoryPartnerSlugDetailsRoute: AdminDirectoryPartnerSlugDetailsRoute,
+}
+
+const AdminDirectoryRouteWithChildren = AdminDirectoryRoute._addFileChildren(
+  AdminDirectoryRouteChildren,
+)
+
 interface AdminRouteChildren {
+  AdminBannersRoute: typeof AdminBannersRoute
+  AdminComplaintRoute: typeof AdminComplaintRoute
+  AdminDirectoryRoute: typeof AdminDirectoryRouteWithChildren
+  AdminEnquiriesRoute: typeof AdminEnquiriesRoute
+  AdminExpiredMembersRoute: typeof AdminExpiredMembersRoute
+  AdminImageRoute: typeof AdminImageRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminOurStaffRoute: typeof AdminOurStaffRoute
+  AdminResetDirectoryRoute: typeof AdminResetDirectoryRoute
+  AdminResetManagementRoute: typeof AdminResetManagementRoute
+  AdminSuperAdminsRoute: typeof AdminSuperAdminsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBannersRoute: AdminBannersRoute,
+  AdminComplaintRoute: AdminComplaintRoute,
+  AdminDirectoryRoute: AdminDirectoryRouteWithChildren,
+  AdminEnquiriesRoute: AdminEnquiriesRoute,
+  AdminExpiredMembersRoute: AdminExpiredMembersRoute,
+  AdminImageRoute: AdminImageRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminOurStaffRoute: AdminOurStaffRoute,
+  AdminResetDirectoryRoute: AdminResetDirectoryRoute,
+  AdminResetManagementRoute: AdminResetManagementRoute,
+  AdminSuperAdminsRoute: AdminSuperAdminsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

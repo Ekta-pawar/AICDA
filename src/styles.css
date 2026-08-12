@@ -173,6 +173,15 @@
   animation: float-3d 6s ease-in-out infinite;
 }
 
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@utility animate-shimmer-sweep {
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+
 @utility scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

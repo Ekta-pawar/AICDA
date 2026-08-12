@@ -9,16 +9,16 @@ import {
   updateGalleryImage,
   uploadGalleryImage,
 } from "@/lib/gallery-api";
-import { BANNER_SECTIONS } from "@/lib/banner-sections";
-import { invalidateBannerCache } from "@/hooks/use-banners";
+import { inputClass } from "./directory-shared";
 
+// Banners have their own dedicated page (Banner Master → /admin/banners),
+// so this gallery never lists or creates BANNER-category images.
 const CATEGORIES = [
   ["ASSOCIATION", "Association"],
   ["POLITICAL_ACHIEVEMENT", "Political Achievement"],
   ["IMAGE", "Image / Video"],
   ["DIRECTORY", "Directory"],
   ["LETTER", "Letter"],
-  ["BANNER", "Banner"],
 ];
 const imageUrl = (image) =>
   image?.imageUrl ||
@@ -35,20 +35,26 @@ function Modal({ title, description, onClose, children }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
       role="dialog"
       aria-modal="true"
+      onClick={onClose}
     >
-      <div className="w-full max-w-3xl rounded-2xl bg-white p-7 shadow-2xl sm:p-10">
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{title}</h3>
+      <div
+        className="w-full max-w-2xl animate-in rounded-[3px] bg-white shadow-2xl fade-in-0 zoom-in-95 duration-150"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3">
+          <div className="min-w-0">
+            <p className="text-[13px] font-bold uppercase tracking-wide text-slate-500">{title}</p>
+            {description && <p className="mt-0.5 text-[13px] text-slate-500">{description}</p>}
+          </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
+            className="shrink-0 rounded-[3px] p-1 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        {description && <p className="-mt-2 mb-8 text-base text-slate-500">{description}</p>}
-        {children}
+        <div className="p-5">{children}</div>
       </div>
     </div>
   );
@@ -56,7 +62,6 @@ function Modal({ title, description, onClose, children }) {
 
 function GalleryForm({ image, onClose, onSaved }) {
   const [category, setCategory] = useState(image?.category || "ASSOCIATION");
-  const [sectionKey, setSectionKey] = useState(image?.title || BANNER_SECTIONS[0].key);
   const [file, setFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -74,10 +79,8 @@ function GalleryForm({ image, onClose, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      const title = category === "BANNER" ? sectionKey : undefined;
-      if (image) await updateGalleryImage(imageId(image), { file, category, title });
-      else await uploadGalleryImage(file, category, title);
-      if (category === "BANNER" || image?.category === "BANNER") invalidateBannerCache();
+      if (image) await updateGalleryImage(imageId(image), { file, category });
+      else await uploadGalleryImage(file, category);
       await onSaved();
     } catch (requestError) {
       setError(requestError.message || "Unable to save the image.");
@@ -86,19 +89,13 @@ function GalleryForm({ image, onClose, onSaved }) {
     }
   };
   return (
-    <form onSubmit={submit} className="space-y-5">
-      <div>
-        <label
-          htmlFor="gallery-category"
-          className="mb-2 block text-sm font-semibold text-slate-700"
-        >
-          Category
-        </label>
+    <form onSubmit={submit} className="space-y-4">
+      <label className="block text-[13px] font-semibold text-slate-700">
+        Category
         <select
-          id="gallery-category"
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+          className={`${inputClass} mt-1`}
         >
           {CATEGORIES.map(([value, label]) => (
             <option key={value} value={value}>
@@ -106,77 +103,49 @@ function GalleryForm({ image, onClose, onSaved }) {
             </option>
           ))}
         </select>
-      </div>
-      {category === "BANNER" && (
-        <div>
-          <label
-            htmlFor="gallery-banner-section"
-            className="mb-2 block text-sm font-semibold text-slate-700"
-          >
-            Banner section
-          </label>
-          <select
-            id="gallery-banner-section"
-            value={sectionKey}
-            onChange={(event) => setSectionKey(event.target.value)}
-            className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-          >
-            {BANNER_SECTIONS.map((section) => (
-              <option key={section.key} value={section.key}>
-                {section.label}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1.5 text-xs text-slate-500">
-            Which page's hero banner (or the header's Become Member button) this image is for.
-          </p>
-        </div>
-      )}
-      <div>
-        <label htmlFor="gallery-image" className="mb-2 block text-sm font-semibold text-slate-700">
-          {image ? "Replace image or video (optional)" : "Image or video"}
-        </label>
+      </label>
+      <label className="block text-[13px] font-semibold text-slate-700">
+        {image ? "Replace image or video (optional)" : "Image or video"}
         <input
-          id="gallery-image"
           type="file"
           accept="image/*,video/*"
           required={!image}
           onChange={(event) => setFile(event.target.files?.[0] || null)}
-          className="block w-full rounded-lg border border-slate-200 p-3 text-sm"
+          className={`${inputClass} mt-1 h-auto py-1.5`}
         />
-        {preview &&
-          (previewIsVideo ? (
-            <video
-              src={preview}
-              controls
-              muted
-              className="mt-3 h-40 w-full rounded-lg border border-slate-200 bg-black object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="Preview"
-              className="mt-3 h-40 w-full rounded-lg border border-slate-200 object-contain"
-            />
-          ))}
-      </div>
+      </label>
+      {preview &&
+        (previewIsVideo ? (
+          <video
+            src={preview}
+            controls
+            muted
+            className="h-48 w-full rounded-[3px] border border-slate-200 bg-black object-contain"
+          />
+        ) : (
+          <img
+            src={preview}
+            alt="Preview"
+            className="h-48 w-full rounded-[3px] border border-slate-200 object-contain"
+          />
+        ))}
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-[13px] text-red-600">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
         <button
           type="button"
           onClick={onClose}
-          className="h-10 rounded-lg bg-slate-100 px-4 text-sm font-semibold"
+          className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={saving || (!image && !file)}
-          className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60"
+          className="inline-flex h-9 items-center gap-2 rounded-[3px] bg-blue-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
           {image ? "Save changes" : "Upload"}
@@ -188,31 +157,38 @@ function GalleryForm({ image, onClose, onSaved }) {
 
 const PAGE_SIZE = 12;
 
+function GalleryCardSkeleton() {
+  return (
+    <div className="flex items-center gap-3 rounded-[3px] border border-slate-300 p-2.5">
+      <Skeleton className="h-14 w-14 shrink-0 rounded-[3px]" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <Skeleton className="h-5 w-24 rounded-full" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+    </div>
+  );
+}
+
 function GalleryTableSkeleton({ rows = 5 }) {
   return (
-    <div className="mt-4 overflow-x-auto scrollbar-hide rounded-xl border border-slate-200">
-      <table className="w-full min-w-150 text-left text-sm">
-        <thead className="bg-slate-50 text-slate-500">
-          <tr>
-            <th className="px-3 py-2.5">Image</th>
-            <th className="px-3 py-2.5">Category</th>
-            <th className="px-3 py-2.5">Uploaded</th>
-            <th className="px-3 py-2.5 text-right">Actions</th>
-          </tr>
-        </thead>
+    <div className="mt-3 hidden overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-300 md:block">
+      <table className="w-full min-w-150 text-left text-[13px]">
         <tbody>
           {Array.from({ length: rows }).map((_, index) => (
-            <tr key={index} className="border-t border-slate-100">
-              <td className="px-3 py-2.5">
-                <Skeleton className="h-14 w-14 rounded-md" />
+            <tr
+              key={index}
+              className={`border-t border-slate-200 first:border-t-0 ${index % 2 === 0 ? "bg-rose-50/70" : "bg-white"}`}
+            >
+              <td className="px-2.5 py-2">
+                <Skeleton className="h-14 w-14 rounded-[3px]" />
               </td>
-              <td className="px-3 py-2.5">
+              <td className="px-2.5 py-2">
                 <Skeleton className="h-5 w-24 rounded-full" />
               </td>
-              <td className="px-3 py-2.5">
+              <td className="px-2.5 py-2">
                 <Skeleton className="h-4 w-20" />
               </td>
-              <td className="px-3 py-2.5">
+              <td className="px-2.5 py-2">
                 <div className="flex justify-end gap-3">
                   <Skeleton className="h-4 w-10" />
                   <Skeleton className="h-4 w-12" />
@@ -241,7 +217,8 @@ export function GalleryManagement() {
     setError("");
     try {
       const result = await getGalleryImages(category);
-      setImages(result.gallery);
+      // Banners live on their own page (Banner Master) — never surface them here.
+      setImages(result.gallery.filter((image) => image.category !== "BANNER"));
     } catch (requestError) {
       setError(requestError.message || "Could not load gallery images.");
     } finally {
@@ -272,7 +249,6 @@ export function GalleryManagement() {
     setWorking(true);
     try {
       await deleteGalleryImage(imageId(deleting));
-      if (deleting?.category === "BANNER") invalidateBannerCache();
       setDeleting(null);
       await loadImages();
     } catch (requestError) {
@@ -282,150 +258,228 @@ export function GalleryManagement() {
     }
   };
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-bold text-primary">
-          Total Images Found : <span className="text-slate-700">{visibleImages.length}</span>
-        </p>
+    <section className="space-y-2">
+      <div className="sticky top-16 z-10 -mx-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 bg-white/95 px-3 py-2 backdrop-blur sm:top-20 sm:mx-0 sm:rounded-[3px] sm:border">
+        <div>
+          <h2 className="text-lg font-bold">Image Gallery</h2>
+          <p className="text-[13px] text-slate-500">
+            Association, achievement, directory and letter images.{" "}
+            <span className="font-semibold text-slate-600">{visibleImages.length}</span> total.
+          </p>
+        </div>
+        <button
+          onClick={() => setEditing(null)}
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] bg-blue-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4" /> Add image
+        </button>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Gallery management</h2>
-            <p className="mt-1 text-sm text-slate-500">Upload, edit, and remove gallery images.</p>
-          </div>
-          <button
-            onClick={() => setEditing(null)}
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white"
-          >
-            <Plus className="h-5 w-5" /> Add image
-          </button>
-        </div>
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-            className="h-10 rounded-lg border border-slate-200 px-3 text-sm"
-          >
-            <option value="">All categories</option>
-            {CATEGORIES.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <label className="relative sm:ml-auto">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search gallery"
-              className="h-10 w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm sm:w-64"
-            />
+      <div className="rounded-[3px] border border-slate-300 bg-white p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <label className="flex items-center gap-2 text-[13px] text-slate-600">
+            Category:
+            <select
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              className="h-8 rounded-[3px] border border-slate-300 px-2 text-[13px] outline-none transition-colors hover:border-slate-400 focus:border-sky-500"
+            >
+              <option value="">All categories</option>
+              {CATEGORIES.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-[13px] text-slate-600">
+            Search:
+            <span className="relative">
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search gallery"
+                className="h-8 w-full rounded-[3px] border border-slate-300 py-1 pl-7 pr-2 text-[13px] outline-none transition-colors hover:border-slate-400 focus:border-sky-500 sm:w-56"
+              />
+            </span>
           </label>
         </div>
+
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p
+            role="alert"
+            className="mt-3 rounded-[3px] bg-red-50 px-3 py-2 text-[13px] text-red-700"
+          >
             {error}
           </p>
         )}
+
         {loading ? (
-          <GalleryTableSkeleton />
+          <>
+            <div className="mt-3 space-y-2 md:hidden">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <GalleryCardSkeleton key={index} />
+              ))}
+            </div>
+            <GalleryTableSkeleton />
+          </>
         ) : visibleImages.length === 0 ? (
-          <div className="mt-4 flex min-h-60 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300">
+          <div className="mt-3 flex min-h-48 flex-col items-center justify-center rounded-[3px] border border-dashed border-slate-300">
             <ImageOff className="h-9 w-9 text-slate-300" />
-            <p className="mt-3 text-sm font-semibold">No images found</p>
+            <p className="mt-3 text-[13px] font-semibold text-slate-500">No images found</p>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto scrollbar-hide rounded-xl border border-slate-200">
-            <table className="w-full min-w-150 text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-3 py-2.5">Image</th>
-                  <th className="px-3 py-2.5">Category</th>
-                  <th className="px-3 py-2.5">Uploaded</th>
-                  <th className="px-3 py-2.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageImages.map((image) => (
-                  <tr key={imageId(image)} className="border-t border-slate-100">
-                    <td className="px-3 py-2.5">
-                      <div className="relative h-14 w-14">
-                        {isVideoUrl(imageUrl(image)) ? (
-                          <video
-                            src={imageUrl(image)}
-                            muted
-                            preload="metadata"
-                            className="h-14 w-14 rounded-md border border-slate-200 bg-black object-cover"
-                          />
-                        ) : (
-                          <img
-                            src={imageUrl(image)}
-                            alt={image.title || "Gallery"}
-                            className="h-14 w-14 rounded-md border border-slate-200 object-cover"
-                          />
-                        )}
-                        {isVideoUrl(imageUrl(image)) && (
-                          <span className="absolute inset-0 flex items-center justify-center rounded-md bg-black/25">
-                            <Play className="h-5 w-5 fill-white text-white" />
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                        {categoryLabel(image.category)}
+          <>
+            <div className="mt-3 space-y-2 md:hidden">
+              {pageImages.map((image) => (
+                <div
+                  key={imageId(image)}
+                  className="flex items-center gap-3 rounded-[3px] border border-slate-300 p-2.5"
+                >
+                  <div className="relative h-14 w-14 shrink-0">
+                    {isVideoUrl(imageUrl(image)) ? (
+                      <video
+                        src={imageUrl(image)}
+                        muted
+                        preload="metadata"
+                        className="h-14 w-14 rounded-[3px] border border-slate-200 bg-black object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={imageUrl(image)}
+                        alt={image.title || "Gallery"}
+                        className="h-14 w-14 rounded-[3px] border border-slate-200 object-cover"
+                      />
+                    )}
+                    {isVideoUrl(imageUrl(image)) && (
+                      <span className="absolute inset-0 flex items-center justify-center rounded-[3px] bg-black/25">
+                        <Play className="h-4 w-4 fill-white text-white" />
                       </span>
-                    </td>
-                    <td className="px-3 py-2.5 text-slate-500">
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-700">
+                      {categoryLabel(image.category)}
+                    </span>
+                    <p className="mt-1 text-xs text-slate-500">
                       {image.createdAt ? new Date(image.createdAt).toLocaleDateString() : "—"}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <div className="flex justify-end gap-3">
-                        <button
-                          onClick={() => setEditing(image)}
-                          className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-primary"
-                        >
-                          <Pencil className="h-4 w-4" /> Edit
-                        </button>
-                        <button
-                          onClick={() => setDeleting(image)}
-                          className="inline-flex items-center gap-1 font-semibold text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" /> Delete
-                        </button>
-                      </div>
-                    </td>
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1.5 text-[13px] font-semibold">
+                    <button
+                      onClick={() => setEditing(image)}
+                      className="inline-flex items-center gap-1 text-slate-600 transition-colors hover:text-sky-700"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleting(image)}
+                      className="inline-flex items-center gap-1 text-red-600 transition-colors hover:text-red-700"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 hidden overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-300 md:block">
+              <table className="w-full min-w-150 text-left text-[13px]">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className="px-2.5 py-2">Image</th>
+                    <th className="px-2.5 py-2">Category</th>
+                    <th className="px-2.5 py-2">Uploaded</th>
+                    <th className="px-2.5 py-2 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {pageImages.map((image, index) => (
+                    <tr
+                      key={imageId(image)}
+                      className={`border-t border-slate-200 transition-colors hover:bg-sky-50/50 ${
+                        index % 2 === 0 ? "bg-rose-50/70" : "bg-white"
+                      }`}
+                    >
+                      <td className="px-2.5 py-2">
+                        <div className="relative h-14 w-14">
+                          {isVideoUrl(imageUrl(image)) ? (
+                            <video
+                              src={imageUrl(image)}
+                              muted
+                              preload="metadata"
+                              className="h-14 w-14 rounded-[3px] border border-slate-200 bg-black object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={imageUrl(image)}
+                              alt={image.title || "Gallery"}
+                              className="h-14 w-14 rounded-[3px] border border-slate-200 object-cover"
+                            />
+                          )}
+                          {isVideoUrl(imageUrl(image)) && (
+                            <span className="absolute inset-0 flex items-center justify-center rounded-[3px] bg-black/25">
+                              <Play className="h-5 w-5 fill-white text-white" />
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2.5 py-2">
+                        <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-semibold text-sky-700">
+                          {categoryLabel(image.category)}
+                        </span>
+                      </td>
+                      <td className="px-2.5 py-2 text-slate-500">
+                        {image.createdAt ? new Date(image.createdAt).toLocaleDateString() : "—"}
+                      </td>
+                      <td className="px-2.5 py-2">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => setEditing(image)}
+                            className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleting(image)}
+                            className="inline-flex items-center gap-1 font-semibold text-red-600 transition-colors hover:text-red-700"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
+
         {totalPages > 1 && (
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm font-semibold">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[13px] font-semibold">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className="rounded-lg border border-slate-200 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-[3px] border border-slate-300 px-3 py-1.5 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-300 disabled:hover:text-slate-700"
             >
               Prev
             </button>
-            <span className="rounded-lg border border-slate-200 px-4 py-2 text-slate-600">
-              Page : {currentPage} of {totalPages}
+            <span className="rounded-[3px] border border-slate-300 px-3 py-1.5 text-slate-600">
+              Page {currentPage} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
-              className="rounded-lg border border-slate-200 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-[3px] border border-slate-300 px-3 py-1.5 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-300 disabled:hover:text-slate-700"
             >
               Next
             </button>
           </div>
         )}
       </div>
+
       {editing !== undefined && (
         <Modal
           title={editing ? "Edit gallery image" : "Gallery upload"}
@@ -441,18 +495,18 @@ export function GalleryManagement() {
       )}
       {deleting && (
         <Modal title="Delete this image?" onClose={() => setDeleting(null)}>
-          <p className="text-sm text-slate-600">This cannot be undone.</p>
-          <div className="mt-6 flex justify-end gap-3">
+          <p className="text-[13px] text-slate-600">This cannot be undone.</p>
+          <div className="mt-5 flex justify-end gap-2">
             <button
               onClick={() => setDeleting(null)}
-              className="h-10 rounded-lg bg-slate-100 px-4 text-sm font-semibold"
+              className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"
             >
               Cancel
             </button>
             <button
               onClick={remove}
               disabled={working}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white disabled:opacity-60"
+              className="inline-flex h-9 items-center gap-2 rounded-[3px] bg-red-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
             >
               {working && <LoaderCircle className="h-4 w-4 animate-spin" />}Delete
             </button>
