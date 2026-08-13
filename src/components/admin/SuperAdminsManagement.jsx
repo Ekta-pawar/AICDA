@@ -6,25 +6,8 @@ import {
   getSuperAdmins,
   updateSuperAdminStatus,
 } from "@/lib/super-admin-api";
+import { FieldRow, inputClass } from "./directory-shared";
 import { ChangePasswordModal } from "./ChangePasswordModal";
-
-function SuperAdminField({ id, name, label, type = "text", required = false }) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-semibold text-slate-700">
-        {label}
-        {required && <span className="text-primary"> *</span>}
-      </label>
-      <input
-        id={id}
-        name={name || id}
-        type={type}
-        required={required}
-        className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm outline-none focus:border-primary focus:ring-3 focus:ring-primary/15"
-      />
-    </div>
-  );
-}
 
 export function SuperAdminsManagement() {
   const [showForm, setShowForm] = useState(false);
@@ -96,157 +79,199 @@ export function SuperAdminsManagement() {
   };
 
   return (
-    <>
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm text-slate-500">Welcome back,</p>
-          <h2 className="mt-0.5 text-2xl font-bold tracking-tight">Super Admin</h2>
-        </div>
+    <section className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border border-slate-300 bg-white px-3 py-2">
+        <h2 className="text-lg font-bold">Super Admins</h2>
+        <button
+          onClick={() => setShowForm(true)}
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] bg-blue-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700"
+        >
+          <Plus className="h-4 w-4" /> New Super Admin
+        </button>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h3 className="font-serif text-3xl font-bold text-primary">Super Admins</h3>
-            <p className="mt-1 text-base text-slate-500">Manage Super Admin accounts</p>
-          </div>
-          <button
-            onClick={() => setShowForm(true)}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-deep"
-          >
-            <Plus className="h-5 w-5" /> New Super Admin
-          </button>
-        </div>
-
+      <div className="rounded-[3px] border border-slate-300 bg-white p-3">
         {error && (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p role="alert" className="rounded-[3px] bg-red-50 px-3 py-2 text-[13px] text-red-700">
             {error}
           </p>
         )}
+
         {loading ? (
-          <p className="py-12 text-center text-sm text-slate-500">Loading Super Admins…</p>
+          <p className="py-12 text-center text-[13px] text-slate-500">Loading Super Admins…</p>
         ) : superAdmins.length ? (
-          <div className="mt-5 overflow-x-auto scrollbar-hide">
-            <table className="w-full min-w-160 text-left text-sm">
-              <thead className="border-b border-slate-200 text-slate-500">
-                <tr>
-                  <th className="px-3 py-2.5">Name</th>
-                  <th className="px-3 py-2.5">Email</th>
-                  <th className="px-3 py-2.5">Role</th>
-                  <th className="px-3 py-2.5">Status</th>
-                  <th className="px-3 py-2.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {superAdmins.map((superAdmin) => {
-                  const isActive =
-                    superAdmin.isActive ?? superAdmin.active ?? superAdmin.status === "ACTIVE";
-                  return (
-                    <tr
-                      key={superAdmin.id || superAdmin._id || superAdmin.email}
-                      className="border-b border-slate-100"
-                    >
-                      <td className="px-3 py-3 font-medium">
-                        {superAdmin.name ||
-                          [superAdmin.firstName, superAdmin.lastName].filter(Boolean).join(" ") ||
-                          "—"}
-                      </td>
-                      <td className="px-3 py-3 text-slate-600">{superAdmin.email}</td>
-                      <td className="px-3 py-3 text-slate-600">
-                        {superAdmin.role || "SUPER_ADMIN"}
-                      </td>
-                      <td className="px-3 py-3">
-                        <button
-                          onClick={() => toggleStatus(superAdmin)}
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-                        >
-                          {isActive ? "Active" : "Inactive"}
-                        </button>
-                      </td>
-                      <td className="space-x-3 px-3 py-3 text-right">
-                        <button
-                          onClick={() => setPasswordResetTarget(superAdmin)}
-                          className="text-sm font-semibold text-slate-600 hover:text-primary"
-                        >
-                          Change password
-                        </button>
-                        <button
-                          onClick={() => removeSuperAdmin(superAdmin)}
-                          className="text-sm font-semibold text-red-600 hover:text-red-800"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="mt-5 flex min-h-72 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <ShieldCheck className="h-8 w-8" />
+          <>
+            <div className="mt-3 space-y-2 md:hidden">
+              {superAdmins.map((superAdmin) => {
+                const isActive =
+                  superAdmin.isActive ?? superAdmin.active ?? superAdmin.status === "ACTIVE";
+                const name =
+                  superAdmin.name ||
+                  [superAdmin.firstName, superAdmin.lastName].filter(Boolean).join(" ") ||
+                  "—";
+                return (
+                  <div
+                    key={superAdmin.id || superAdmin._id || superAdmin.email}
+                    className="rounded-[3px] border border-slate-300 p-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-semibold">{name}</p>
+                        <p className="truncate text-xs text-slate-500">{superAdmin.email}</p>
+                      </div>
+                      <button
+                        onClick={() => toggleStatus(superAdmin)}
+                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-opacity hover:opacity-80 ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
+                      >
+                        {isActive ? "Active" : "Inactive"}
+                      </button>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Role:{" "}
+                      <span className="text-slate-700">{superAdmin.role || "SUPER_ADMIN"}</span>
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-2">
+                      <button
+                        onClick={() => setPasswordResetTarget(superAdmin)}
+                        className="text-[13px] font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                      >
+                        Change password
+                      </button>
+                      <button
+                        onClick={() => removeSuperAdmin(superAdmin)}
+                        className="text-[13px] font-semibold text-red-600 transition-colors hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <h4 className="mt-5 text-lg font-bold text-slate-800">No Super Admin accounts found</h4>
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Create a Super Admin to grant management portal access.
+
+            <div className="mt-3 hidden overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-300 md:block">
+              <table className="w-full min-w-160 text-left text-[13px]">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className="px-2.5 py-2">Name</th>
+                    <th className="px-2.5 py-2">Email</th>
+                    <th className="px-2.5 py-2">Role</th>
+                    <th className="px-2.5 py-2">Status</th>
+                    <th className="px-2.5 py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {superAdmins.map((superAdmin, index) => {
+                    const isActive =
+                      superAdmin.isActive ?? superAdmin.active ?? superAdmin.status === "ACTIVE";
+                    return (
+                      <tr
+                        key={superAdmin.id || superAdmin._id || superAdmin.email}
+                        className={`border-t border-slate-200 transition-colors hover:bg-sky-50/60 ${index % 2 === 0 ? "bg-rose-50/70" : "bg-white"}`}
+                      >
+                        <td className="px-2.5 py-2 font-medium">
+                          {superAdmin.name ||
+                            [superAdmin.firstName, superAdmin.lastName].filter(Boolean).join(" ") ||
+                            "—"}
+                        </td>
+                        <td className="px-2.5 py-2 text-slate-600">{superAdmin.email}</td>
+                        <td className="px-2.5 py-2 text-slate-600">
+                          {superAdmin.role || "SUPER_ADMIN"}
+                        </td>
+                        <td className="px-2.5 py-2">
+                          <button
+                            onClick={() => toggleStatus(superAdmin)}
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold transition-opacity hover:opacity-80 ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
+                          >
+                            {isActive ? "Active" : "Inactive"}
+                          </button>
+                        </td>
+                        <td className="px-2.5 py-2">
+                          <div className="flex justify-end gap-3">
+                            <button
+                              onClick={() => setPasswordResetTarget(superAdmin)}
+                              className="font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                            >
+                              Change password
+                            </button>
+                            <button
+                              onClick={() => removeSuperAdmin(superAdmin)}
+                              className="font-semibold text-red-600 transition-colors hover:text-red-700"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <div className="mt-3 flex min-h-48 flex-col items-center justify-center rounded-[3px] border border-dashed border-slate-300">
+            <ShieldCheck className="h-9 w-9 text-slate-300" />
+            <p className="mt-3 text-[13px] font-semibold text-slate-500">
+              No Super Admin accounts found
             </p>
           </div>
         )}
-      </section>
+      </div>
 
       {showForm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-[1px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-super-admin-title"
         >
           <form
-            className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-7"
+            className="w-full max-w-2xl animate-in rounded-[3px] bg-white shadow-2xl fade-in-0 zoom-in-95 duration-150"
             onSubmit={handleCreate}
           >
-            <h3 id="create-super-admin-title" className="text-2xl font-bold text-slate-800">
-              Create new Super Admin
-            </h3>
-            <div className="mt-6 grid gap-x-5 gap-y-5 sm:grid-cols-2">
-              <SuperAdminField id="first-name" name="firstName" label="First name" required />
-              <SuperAdminField id="last-name" name="lastName" label="Last name" required />
-              <SuperAdminField
-                id="super-admin-email"
-                name="email"
-                label="Email"
-                type="email"
-                required
-              />
-              <SuperAdminField
-                id="phone-number"
-                name="phone"
-                label="Phone number"
-                type="tel"
-                required
-              />
-              <SuperAdminField
-                id="new-password"
-                name="password"
-                label="Password"
-                type="password"
-                required
-              />
+            <div className="border-b border-slate-200 bg-slate-50 px-5 py-3">
+              <p
+                id="create-super-admin-title"
+                className="text-[13px] font-bold uppercase tracking-wide text-slate-500"
+              >
+                Create new Super Admin
+              </p>
             </div>
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="grid gap-x-2 p-3 sm:grid-cols-2">
+              <FieldRow label="First name" required>
+                <input name="firstName" required className={inputClass} />
+              </FieldRow>
+              <FieldRow label="Last name" required>
+                <input name="lastName" required className={inputClass} />
+              </FieldRow>
+              <FieldRow label="Email" required>
+                <input name="email" type="email" required className={inputClass} />
+              </FieldRow>
+              <FieldRow label="Phone number" required>
+                <input name="phone" type="tel" required className={inputClass} />
+              </FieldRow>
+              <FieldRow label="Password" required>
+                <input name="password" type="password" required className={inputClass} />
+              </FieldRow>
+            </div>
+            {error && (
+              <p role="alert" className="px-3 pb-2 text-[13px] text-red-700">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-2 border-t border-slate-200 px-3 py-3">
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="h-11 rounded-lg bg-slate-100 px-5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200"
+                className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="h-11 rounded-lg bg-primary px-5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-deep disabled:opacity-60"
+                className="h-9 rounded-[3px] bg-blue-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? "Creating…" : "Create Super Admin"}
               </button>
@@ -262,6 +287,6 @@ export function SuperAdminsManagement() {
           superAdminId={passwordResetTarget.id || passwordResetTarget._id}
         />
       )}
-    </>
+    </section>
   );
 }

@@ -6,12 +6,16 @@ const STAT_CARD_ACCENTS = {
   sky: "bg-sky-50 text-sky-700",
   emerald: "bg-emerald-50 text-emerald-700",
   slate: "bg-slate-100 text-slate-500",
+  amber: "bg-amber-50 text-amber-700",
+  violet: "bg-violet-50 text-violet-700",
 };
 
 const STAT_CARD_HOVER_BORDERS = {
   sky: "hover:border-sky-300",
   emerald: "hover:border-emerald-300",
   slate: "hover:border-slate-400",
+  amber: "hover:border-amber-300",
+  violet: "hover:border-violet-300",
 };
 
 export function StatCard({ icon: Icon, label, value, accent = "slate" }) {

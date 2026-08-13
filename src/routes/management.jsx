@@ -229,7 +229,7 @@ function OfficeBearerSlide({ bearer }) {
 
   return (
     <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-[220px_1fr]">
-      <div className="flex w-full items-start justify-center lg:h-45 sm:h-45 overflow-hidden rounded-lg">
+      <div className="flex h-45 w-full items-start justify-center overflow-hidden rounded-lg">
         {bearer.photo ? (
           <img
             src={bearer.photo}
@@ -344,7 +344,7 @@ function OfficeBearersList({ bearers }) {
   }
 
   return (
-    <div className="mt-4 h-185 space-y-6 overflow-y-auto scrollbar-hide">
+    <div className="mt-4 h-[65vh] space-y-6 overflow-y-auto scrollbar-hide sm:h-185">
       {bearers.map((bearer, index) => (
         <OfficeBearerSlide key={bearer.id || `${bearer.name}-${index}`} bearer={bearer} />
       ))}

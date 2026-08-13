@@ -116,7 +116,7 @@ export function PartnerDetails({ slug }) {
           </p>
         )
       ) : (
-        <div className="grid gap-3 lg:grid-cols-[16rem_1fr] h-7">
+        <div className="grid gap-3 lg:grid-cols-[16rem_1fr]">
           <div className="rounded-[3px] border border-slate-300  bg-white p-4 transition-shadow hover:shadow-sm">
             {partner.photo ? (
               <img

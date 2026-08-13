@@ -44,7 +44,7 @@ export function SiteHeader() {
               </span>
             </span>
           </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm">
+          <div className="hidden lg:flex items-center gap-6 text-sm">
             <span className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-primary" /> +91 9818691000
             </span>
@@ -83,7 +83,7 @@ export function SiteHeader() {
         </nav>
         {open && (
           <nav className="lg:hidden">
-            <div className="px-2 pt-2 md:hidden">
+            <div className="px-2 pt-2 lg:hidden">
               <Link
                 to="/become-member"
                 onClick={() => setOpen(false)}

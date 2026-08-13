@@ -1,9 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Eye, Image as ImageIcon, Pencil, Plus, Users, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Eye,
+  FileDown,
+  Image as ImageIcon,
+  LoaderCircle,
+  Pencil,
+  Plus,
+  Users,
+  X,
+} from "lucide-react";
+import { toPng } from "html-to-image";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMemberDetails } from "@/lib/member-api";
 import { buildPartnerSlug, isExpired, parseMemberSlug } from "./directory-shared";
+import { MemberPrintableForm } from "./MemberPrintableForm";
 import { PartnerForm } from "./PartnerForm";
 
 function InfoRow({ label, value }) {
@@ -45,6 +59,50 @@ function daysUntil(value) {
   if (days > 0) return `${days} day${days === 1 ? "" : "s"} left`;
   if (days === 0) return "expires today";
   return `expired ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} ago`;
+}
+
+function toCsvCell(value) {
+  const text = value == null ? "" : String(value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function downloadRenewalsCsv(member) {
+  const currentRenewalId = member.renewals?.[0]?.id;
+  const rows = [
+    ["Payment Date", "Amount (₹)", "Validity From", "Validity To", "Note", "Current"],
+    ...member.renewals.map((renewal) => [
+      formatDate(renewal.paymentDate) || "",
+      renewal.amount ?? "",
+      formatDate(renewal.validityFrom) || "",
+      formatDate(renewal.validityTo) || "",
+      renewal.note || "",
+      renewal.id === currentRenewalId ? "Yes" : "No",
+    ]),
+  ];
+  const csv = rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${(member.memberName || "member").trim().replace(/\s+/g, "_")}_payment_history.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+async function downloadMemberFormImage(node, fileName) {
+  const dataUrl = await toPng(node, {
+    pixelRatio: 2,
+    backgroundColor: "#ffffff",
+    cacheBust: true,
+  });
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function DetailsSkeleton() {
@@ -98,6 +156,8 @@ export function MemberDetails({ slug }) {
 
   const [showPartnerForm, setShowPartnerForm] = useState(false);
   const [editingPartner, setEditingPartner] = useState(null);
+  const [downloadingForm, setDownloadingForm] = useState(false);
+  const printableFormRef = useRef(null);
 
   const loadMember = () => {
     setLoading(true);
@@ -147,18 +207,46 @@ export function MemberDetails({ slug }) {
     await loadMember();
   };
 
+  const handleDownloadForm = async () => {
+    if (!printableFormRef.current || downloadingForm) return;
+    setDownloadingForm(true);
+    try {
+      const baseName = (member.memberName || "member").trim().replace(/\s+/g, "_");
+      await downloadMemberFormImage(printableFormRef.current, `${baseName}_member_form.png`);
+    } catch {
+      toast.error("Couldn't generate the form. Please try again.");
+    } finally {
+      setDownloadingForm(false);
+    }
+  };
+
   const validityHint = member ? daysUntil(member.validityTo) : null;
   const currentRenewalId = member?.renewals?.[0]?.id;
 
   return (
     <section className="space-y-2">
-      <div className="rounded-[3px]  bg-white px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-[3px] bg-white px-3 py-2">
         <Link
           to="/admin/directory"
           className="inline-flex items-center gap-1 rounded-[3px] px-2 py-1 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-sky-700"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Directory
         </Link>
+        {member && (
+          <button
+            type="button"
+            onClick={handleDownloadForm}
+            disabled={downloadingForm}
+            className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {downloadingForm ? (
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileDown className="h-3.5 w-3.5" />
+            )}
+            Download form
+          </button>
+        )}
       </div>
 
       {error && (
@@ -177,7 +265,7 @@ export function MemberDetails({ slug }) {
         )
       ) : (
         <div className="grid lg:grid-cols-[16rem_1fr]">
-          <div className="rounded-[3px]  bg-white  transition-shadow hover:shadow-sm">
+          <div className="rounded-[3px]  bg-white  transition-shadow ">
             {member.photo ? (
               <img
                 src={member.photo}
@@ -241,67 +329,119 @@ export function MemberDetails({ slug }) {
               {!member.partners || member.partners.length === 0 ? (
                 <p className="text-[13px] text-slate-500">No partners linked to this member.</p>
               ) : (
-                <div className="overflow-x-auto scrollbar-hide">
-                  <table className="w-full min-w-125 text-left text-[13px]">
-                    <thead className="text-slate-500">
-                      <tr>
-                        <th className="py-1.5 pr-3">Partner ID</th>
-                        <th className="py-1.5 pr-3">Name</th>
-                        <th className="py-1.5 pr-3">Mobile</th>
-                        <th className="py-1.5 pr-3">Status</th>
-                        <th className="py-1.5 pr-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {member.partners.map((partner) => (
-                        <tr
-                          key={partner.id}
-                          className="border-t border-slate-100 transition-colors hover:bg-slate-50"
-                        >
-                          <td className="py-1.5 pr-3 font-medium">{partner.partnerId}</td>
-                          <td className="py-1.5 pr-3">
-                            <Link
-                              to="/admin/directory/partner/$slug/details"
-                              params={{ slug: buildPartnerSlug(partner) }}
-                              className="transition-colors hover:text-sky-700 hover:underline"
-                            >
+                <>
+                  <div className="space-y-2 md:hidden">
+                    {member.partners.map((partner) => (
+                      <div key={partner.id} className="rounded-[3px] border border-slate-200 p-2.5">
+                        <div className="flex items-start justify-between gap-3">
+                          <Link
+                            to="/admin/directory/partner/$slug/details"
+                            params={{ slug: buildPartnerSlug(partner) }}
+                            className="min-w-0 transition-colors hover:underline"
+                          >
+                            <p className="truncate text-[13px] font-semibold">
                               {partner.partnerName}
-                            </Link>
-                          </td>
-                          <td className="py-1.5 pr-3 text-slate-600">{partner.mobile || "—"}</td>
-                          <td className="py-1.5 pr-3">
-                            <StatusBadge active={partner.isActive && !isExpired(partner)} />
-                          </td>
-                          <td className="py-1.5 pr-3 text-right">
-                            <div className="flex justify-end gap-3">
+                            </p>
+                            <p className="text-xs text-slate-500">ID: {partner.partnerId}</p>
+                          </Link>
+                          <StatusBadge active={partner.isActive && !isExpired(partner)} />
+                        </div>
+                        <p className="mt-1.5 text-xs text-slate-500">
+                          Mobile: <span className="text-slate-600">{partner.mobile || "—"}</span>
+                        </p>
+                        <div className="mt-2 flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-2">
+                          <Link
+                            to="/admin/directory/partner/$slug/details"
+                            params={{ slug: buildPartnerSlug(partner) }}
+                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                          >
+                            <Eye className="h-3.5 w-3.5" /> View
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => openEditPartnerForm(partner)}
+                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                          >
+                            <Pencil className="h-3.5 w-3.5" /> Edit
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden overflow-x-auto scrollbar-hide md:block">
+                    <table className="w-full min-w-125 text-left text-[13px]">
+                      <thead className="text-slate-500">
+                        <tr>
+                          <th className="py-1.5 pr-3">Partner ID</th>
+                          <th className="py-1.5 pr-3">Name</th>
+                          <th className="py-1.5 pr-3">Mobile</th>
+                          <th className="py-1.5 pr-3">Status</th>
+                          <th className="py-1.5 pr-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {member.partners.map((partner) => (
+                          <tr
+                            key={partner.id}
+                            className="border-t border-slate-100 transition-colors hover:bg-slate-50"
+                          >
+                            <td className="py-1.5 pr-3 font-medium">{partner.partnerId}</td>
+                            <td className="py-1.5 pr-3">
                               <Link
                                 to="/admin/directory/partner/$slug/details"
                                 params={{ slug: buildPartnerSlug(partner) }}
-                                className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                                className="transition-colors hover:text-sky-700 hover:underline"
                               >
-                                <Eye className="h-3.5 w-3.5" /> View
+                                {partner.partnerName}
                               </Link>
-                              <button
-                                type="button"
-                                onClick={() => openEditPartnerForm(partner)}
-                                className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
-                              >
-                                <Pencil className="h-3.5 w-3.5" /> Edit
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            </td>
+                            <td className="py-1.5 pr-3 text-slate-600">{partner.mobile || "—"}</td>
+                            <td className="py-1.5 pr-3">
+                              <StatusBadge active={partner.isActive && !isExpired(partner)} />
+                            </td>
+                            <td className="py-1.5 pr-3 text-right">
+                              <div className="flex justify-end gap-3">
+                                <Link
+                                  to="/admin/directory/partner/$slug/details"
+                                  params={{ slug: buildPartnerSlug(partner) }}
+                                  className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                                >
+                                  <Eye className="h-3.5 w-3.5" /> View
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => openEditPartnerForm(partner)}
+                                  className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" /> Edit
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
 
             <div className="rounded-[3px] border border-slate-300 bg-white p-4 transition-shadow hover:shadow-sm">
-              <h3 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-slate-500">
-                Payment &amp; Renewal History
-              </h3>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-[13px] font-bold uppercase tracking-wide text-slate-500">
+                  Payment &amp; Renewal History
+                </h3>
+                {member.renewals && member.renewals.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => downloadRenewalsCsv(member)}
+                    className="inline-flex h-7 shrink-0 items-center gap-1 rounded-[3px] border border-slate-300 px-2.5 text-xs font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download report
+                  </button>
+                )}
+              </div>
               {!member.renewals || member.renewals.length === 0 ? (
                 <p className="text-[13px] text-slate-500">No payment records yet.</p>
               ) : (
@@ -337,6 +477,12 @@ export function MemberDetails({ slug }) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {member && (
+        <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "-9999px", zIndex: -1 }}>
+          <MemberPrintableForm member={member} formRef={printableFormRef} />
         </div>
       )}
 

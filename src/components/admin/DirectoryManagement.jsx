@@ -332,8 +332,9 @@ export function DirectoryManagement() {
           ) : (
             <>
               <div className="mt-3 space-y-2 md:hidden">
-                {members.map((member) => {
+                {members.map((member, index) => {
                   const isEffectivelyActive = member.isActive && !isExpired(member);
+                  const serialNo = (pagination.page - 1) * pagination.limit + index + 1;
                   return (
                     <div
                       key={member.id}
@@ -345,7 +346,9 @@ export function DirectoryManagement() {
                           params={{ slug: buildMemberSlug(member) }}
                           className="min-w-0 transition-colors hover:underline"
                         >
-                          <p className="truncate text-[13px] font-semibold">{member.memberName}</p>
+                          <p className="truncate text-[13px] font-semibold">
+                            {serialNo}. {member.memberName}
+                          </p>
                           <p className="text-xs text-slate-500">ID: {member.memberId}</p>
                         </Link>
                         <button
@@ -411,6 +414,7 @@ export function DirectoryManagement() {
                 <table className="w-full min-w-175 text-left text-[13px]">
                   <thead className="bg-slate-50 text-slate-500">
                     <tr>
+                      <th className="px-2.5 py-2">No</th>
                       <th className="px-2.5 py-2">Member ID</th>
                       <th className="px-2.5 py-2">Name</th>
                       <th className="px-2.5 py-2">Company</th>
@@ -423,11 +427,13 @@ export function DirectoryManagement() {
                   <tbody>
                     {members.map((member, index) => {
                       const isEffectivelyActive = member.isActive && !isExpired(member);
+                      const serialNo = (pagination.page - 1) * pagination.limit + index + 1;
                       return (
                         <tr
                           key={member.id}
                           className={`border-t border-slate-200 transition-colors hover:bg-sky-50/60 ${index % 2 === 0 ? "bg-rose-50/70" : "bg-white"}`}
                         >
+                          <td className="px-2.5 py-2 text-slate-500">{serialNo}</td>
                           <td className="px-2.5 py-2 font-medium">{member.memberId}</td>
                           <td className="px-2.5 py-2">
                             <Link

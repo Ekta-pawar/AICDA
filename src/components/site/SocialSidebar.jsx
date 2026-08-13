@@ -45,7 +45,7 @@ const SOCIAL_LINKS = [
 
 export function SocialSidebar() {
   return (
-    <div className="fixed right-2 top-1/2 z-40 -translate-y-1/2 flex flex-col gap-2">
+    <div className="fixed right-1 top-1/2 z-40 flex -translate-y-1/2 flex-col gap-1.5 sm:right-2 sm:gap-2">
       {SOCIAL_LINKS.map(({ icon: Icon, href, label, bg }) => (
         <a
           key={label}
@@ -54,9 +54,9 @@ export function SocialSidebar() {
           rel="noopener noreferrer"
           aria-label={label}
           style={{ backgroundColor: bg }}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md transition hover:scale-110"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-white shadow-md transition hover:scale-110 sm:h-10 sm:w-10"
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </a>
       ))}
     </div>

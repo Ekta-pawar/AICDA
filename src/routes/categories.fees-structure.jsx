@@ -31,8 +31,8 @@ function Page() {
 
           <h3 className="text-center text-[20px] font-semibold mb-6">MOTOR VEHICLES RULES 2002</h3>
 
-          <div className="max-w-6xl mx-auto py-4">
-            <table className="w-full border-collapse text-[18px] text-gray-700">
+          <div className="max-w-6xl mx-auto py-4 overflow-x-auto">
+            <table className="w-full min-w-100 border-collapse text-[18px] text-gray-700">
               <tbody>
                 <tr>
                   <td className="border border-gray-400 px-2 py-2">

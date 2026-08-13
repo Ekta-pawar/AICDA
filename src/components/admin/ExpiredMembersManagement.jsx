@@ -99,37 +99,72 @@ export function ExpiredMembersManagement() {
             </p>
           </div>
         ) : (
-          <div className="mt-3 overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-300">
-            <table className="w-full min-w-175 text-left text-[13px]">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  <th className="px-2.5 py-2">Member ID</th>
-                  <th className="px-2.5 py-2">Name</th>
-                  <th className="px-2.5 py-2">Company</th>
-                  <th className="px-2.5 py-2">Mobile</th>
-                  <th className="px-2.5 py-2">Designation</th>
-                  <th className="px-2.5 py-2">Validity To</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((member, index) => (
-                  <tr
-                    key={member.id}
-                    className={`border-t border-slate-200 ${index % 2 === 0 ? "bg-red-50/60" : "bg-white"}`}
-                  >
-                    <td className="px-2.5 py-2 font-medium">{member.memberId}</td>
-                    <td className="px-2.5 py-2">{member.memberName}</td>
-                    <td className="px-2.5 py-2 text-slate-600">{member.companyName || "—"}</td>
-                    <td className="px-2.5 py-2 text-slate-600">{member.mobile || "—"}</td>
-                    <td className="px-2.5 py-2 text-slate-600">{member.designation || "—"}</td>
-                    <td className="px-2.5 py-2 font-semibold text-red-700">
+          <>
+            <div className="mt-3 space-y-2 md:hidden">
+              {filtered.map((member) => (
+                <div
+                  key={member.id}
+                  className="rounded-[3px] border border-red-200 bg-red-50/40 p-2.5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold">{member.memberName}</p>
+                      <p className="text-xs text-slate-500">ID: {member.memberId}</p>
+                    </div>
+                    <span className="shrink-0 text-xs font-semibold text-red-700">
                       {formatDate(member.validityTo)}
-                    </td>
+                    </span>
+                  </div>
+                  <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                    <div>
+                      <dt className="text-slate-400">Company</dt>
+                      <dd className="truncate text-slate-600">{member.companyName || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-400">Mobile</dt>
+                      <dd className="truncate text-slate-600">{member.mobile || "—"}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-400">Designation</dt>
+                      <dd className="truncate text-slate-600">{member.designation || "—"}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 hidden overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-300 md:block">
+              <table className="w-full min-w-175 text-left text-[13px]">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className="px-2.5 py-2">Member ID</th>
+                    <th className="px-2.5 py-2">Name</th>
+                    <th className="px-2.5 py-2">Company</th>
+                    <th className="px-2.5 py-2">Mobile</th>
+                    <th className="px-2.5 py-2">Designation</th>
+                    <th className="px-2.5 py-2">Validity To</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((member, index) => (
+                    <tr
+                      key={member.id}
+                      className={`border-t border-slate-200 ${index % 2 === 0 ? "bg-red-50/60" : "bg-white"}`}
+                    >
+                      <td className="px-2.5 py-2 font-medium">{member.memberId}</td>
+                      <td className="px-2.5 py-2">{member.memberName}</td>
+                      <td className="px-2.5 py-2 text-slate-600">{member.companyName || "—"}</td>
+                      <td className="px-2.5 py-2 text-slate-600">{member.mobile || "—"}</td>
+                      <td className="px-2.5 py-2 text-slate-600">{member.designation || "—"}</td>
+                      <td className="px-2.5 py-2 font-semibold text-red-700">
+                        {formatDate(member.validityTo)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </section>
