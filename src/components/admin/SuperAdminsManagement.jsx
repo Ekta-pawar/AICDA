@@ -137,12 +137,12 @@ export function SuperAdminsManagement() {
                       >
                         Change password
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => removeSuperAdmin(superAdmin)}
                         className="text-[13px] font-semibold text-red-600 transition-colors hover:text-red-700"
                       >
                         Delete
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 );
@@ -194,12 +194,12 @@ export function SuperAdminsManagement() {
                             >
                               Change password
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => removeSuperAdmin(superAdmin)}
                               className="font-semibold text-red-600 transition-colors hover:text-red-700"
                             >
                               Delete
-                            </button>
+                            </button> */}
                           </div>
                         </td>
                       </tr>

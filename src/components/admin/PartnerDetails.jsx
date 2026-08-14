@@ -1,9 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Image as ImageIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FileDown,
+  Image as ImageIcon,
+  LoaderCircle,
+  RefreshCw,
+} from "lucide-react";
+import { toPng } from "html-to-image";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getPartnerDetails } from "@/lib/partner-api";
-import { buildMemberSlug, isExpired, parsePartnerSlug } from "./directory-shared";
+import { getPartnerDetails, renewPartner } from "@/lib/partner-api";
+import {
+  buildMemberSlug,
+  daysRemaining,
+  expiryLabel,
+  inputClass,
+  isExpired,
+  isTodayOrPast,
+  parsePartnerSlug,
+  StatusBadge,
+} from "./directory-shared";
+import { PartnerPrintableForm } from "./PartnerPrintableForm";
 
 function InfoRow({ label, value }) {
   return (
@@ -14,16 +33,6 @@ function InfoRow({ label, value }) {
   );
 }
 
-function StatusBadge({ active }) {
-  return (
-    <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-    >
-      {active ? "Active" : "Inactive"}
-    </span>
-  );
-}
-
 function formatDate(value) {
   if (!value) return null;
   const date = new Date(value);
@@ -31,17 +40,48 @@ function formatDate(value) {
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
-function daysUntil(value) {
-  if (!value) return null;
-  const target = new Date(value);
-  if (Number.isNaN(target.getTime())) return null;
-  const today = new Date();
-  target.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  const days = Math.round((target - today) / 86400000);
-  if (days > 0) return `${days} day${days === 1 ? "" : "s"} left`;
-  if (days === 0) return "expires today";
-  return `expired ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} ago`;
+function toCsvCell(value) {
+  const text = value == null ? "" : String(value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function downloadRenewalsCsv(partner) {
+  const currentRenewalId = partner.renewals?.[0]?.id;
+  const rows = [
+    ["Payment Date", "Amount (₹)", "Validity From", "Validity To", "Note", "Current"],
+    ...partner.renewals.map((renewal) => [
+      formatDate(renewal.paymentDate) || "",
+      renewal.amount ?? "",
+      formatDate(renewal.validityFrom) || "",
+      formatDate(renewal.validityTo) || "",
+      renewal.note || "",
+      renewal.id === currentRenewalId ? "Yes" : "No",
+    ]),
+  ];
+  const csv = rows.map((row) => row.map(toCsvCell).join(",")).join("\r\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${(partner.partnerName || "partner").trim().replace(/\s+/g, "_")}_payment_history.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+async function downloadPartnerFormImage(node, fileName) {
+  const dataUrl = await toPng(node, {
+    pixelRatio: 2,
+    backgroundColor: "#ffffff",
+    cacheBust: true,
+  });
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function DetailsSkeleton() {
@@ -61,6 +101,26 @@ export function PartnerDetails({ slug }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [showRenew, setShowRenew] = useState(false);
+  const [renewDate, setRenewDate] = useState("");
+  const [renewAmount, setRenewAmount] = useState("");
+  const [renewing, setRenewing] = useState(false);
+  const [renewError, setRenewError] = useState("");
+
+  const [downloadingForm, setDownloadingForm] = useState(false);
+  const printableFormRef = useRef(null);
+
+  const loadPartner = () => {
+    setLoading(true);
+    setError("");
+    return getPartnerDetails(parsePartnerSlug(slug))
+      .then(setPartner)
+      .catch((requestError) => {
+        setError(requestError.message || "Could not load this partner.");
+      })
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -77,12 +137,74 @@ export function PartnerDetails({ slug }) {
   }, [slug]);
 
   const isEffectivelyActive = partner ? partner.isActive && !isExpired(partner) : false;
-  const validityHint = partner ? daysUntil(partner.validityTo) : null;
+  const validityHint = partner ? expiryLabel(daysRemaining(partner)) : null;
   const currentRenewalId = partner?.renewals?.[0]?.id;
+
+  const handleDownloadForm = async () => {
+    if (!printableFormRef.current || downloadingForm) return;
+    setDownloadingForm(true);
+    try {
+      const baseName = (partner.partnerName || "partner").trim().replace(/\s+/g, "_");
+      await downloadPartnerFormImage(printableFormRef.current, `${baseName}_partner_form.png`);
+    } catch {
+      toast.error("Couldn't generate the form. Please try again.");
+    } finally {
+      setDownloadingForm(false);
+    }
+  };
+
+  const openRenew = () => {
+    setRenewDate(partner.validityTo ? partner.validityTo.slice(0, 10) : "");
+    setRenewAmount("");
+    setRenewError("");
+    setShowRenew(true);
+  };
+
+  const closeRenew = () => {
+    setShowRenew(false);
+    setRenewDate("");
+    setRenewAmount("");
+    setRenewError("");
+  };
+
+  const confirmRenew = async (event) => {
+    event.preventDefault();
+    if (!renewDate) {
+      setRenewError("Choose the new validity date.");
+      return;
+    }
+    if (isTodayOrPast(renewDate)) {
+      setRenewError("Validity date must be after today.");
+      return;
+    }
+    if (renewAmount && Number(renewAmount) < 0) {
+      setRenewError("Amount cannot be negative.");
+      return;
+    }
+    setRenewing(true);
+    setRenewError("");
+    try {
+      await renewPartner(partner.id, {
+        validityTo: renewDate,
+        amount: renewAmount ? Number(renewAmount) : undefined,
+      });
+      await loadPartner();
+      toast.success(
+        `${partner.partnerName || "Partner"} renewed through ${renewDate}. Status: ${partner.isActive ? "Active" : "Inactive"}.`,
+      );
+      closeRenew();
+    } catch (requestError) {
+      const message = requestError.message || "Could not renew partner.";
+      setRenewError(message);
+      toast.error(message);
+    } finally {
+      setRenewing(false);
+    }
+  };
 
   return (
     <section className="space-y-2">
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {partner?.member ? (
           <Link
             to="/admin/directory/$slug/details"
@@ -98,6 +220,30 @@ export function PartnerDetails({ slug }) {
           >
             <ArrowLeft className="h-4 w-4" /> Back to Directory
           </Link>
+        )}
+        {partner && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={openRenew}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-emerald-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-700"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Renew
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadForm}
+              disabled={downloadingForm}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {downloadingForm ? (
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileDown className="h-3.5 w-3.5" />
+              )}
+              Download form
+            </button>
+          </div>
         )}
       </div>
 
@@ -117,12 +263,12 @@ export function PartnerDetails({ slug }) {
         )
       ) : (
         <div className="grid gap-3 lg:grid-cols-[16rem_1fr]">
-          <div className="rounded-[3px] border border-slate-300  bg-white p-4 transition-shadow hover:shadow-sm">
+          <div className="rounded-[3px]   bg-white  ">
             {partner.photo ? (
               <img
                 src={partner.photo}
                 alt={partner.partnerName}
-                className="mx-auto h-40 w-40 rounded-[3px] border border-slate-300 object-cover"
+                className="mx-auto h-40 w-45 rounded-[3px] border border-slate-300 object-cover"
               />
             ) : (
               <div className="mx-auto flex h-40 w-40 items-center justify-center rounded-[3px] border border-dashed border-slate-300 text-slate-300">
@@ -164,7 +310,10 @@ export function PartnerDetails({ slug }) {
                 <InfoRow label="Company" value={partner.companyName} />
                 <InfoRow
                   label="State / City"
-                  value={[partner.city?.cityName, partner.state?.stateName]
+                  value={[
+                    partner.city?.cityName || partner.city,
+                    partner.state?.stateName || partner.state,
+                  ]
                     .filter(Boolean)
                     .join(", ")}
                 />
@@ -181,9 +330,20 @@ export function PartnerDetails({ slug }) {
             </div>
 
             <div className="rounded-[3px] border border-slate-300 bg-white p-4 transition-shadow hover:shadow-sm">
-              <h3 className="mb-3 text-[13px] font-bold uppercase tracking-wide text-slate-500">
-                Payment &amp; Renewal History
-              </h3>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="text-[13px] font-bold uppercase tracking-wide text-slate-500">
+                  Payment &amp; Renewal History
+                </h3>
+                {partner.renewals && partner.renewals.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => downloadRenewalsCsv(partner)}
+                    className="inline-flex h-7 shrink-0 items-center gap-1 rounded-[3px] border border-slate-300 px-2.5 text-xs font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download report
+                  </button>
+                )}
+              </div>
               {!partner.renewals || partner.renewals.length === 0 ? (
                 <p className="text-[13px] text-slate-500">No payment records yet.</p>
               ) : (
@@ -219,6 +379,79 @@ export function PartnerDetails({ slug }) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {partner && (
+        <div aria-hidden="true" style={{ position: "fixed", top: 0, left: "-9999px", zIndex: -1 }}>
+          <PartnerPrintableForm partner={partner} formRef={printableFormRef} />
+        </div>
+      )}
+
+      {showRenew && partner && (
+        <div
+          className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-slate-950/45 p-4 fade-in-0 duration-150"
+          role="dialog"
+          aria-modal="true"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeRenew();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") closeRenew();
+          }}
+        >
+          <form
+            onSubmit={confirmRenew}
+            className="w-full max-w-sm animate-in rounded-[3px] bg-white p-5 shadow-2xl zoom-in-95 duration-150"
+          >
+            <h3 className="text-lg font-bold text-slate-800">Renew partner</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {partner.partnerName || "This partner"} — set the new validity date.
+            </p>
+            <label className="mt-4 block text-[13px] font-semibold text-slate-700">
+              New Validity To
+              <input
+                type="date"
+                required
+                value={renewDate}
+                onChange={(e) => setRenewDate(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </label>
+            <label className="mt-3 block text-[13px] font-semibold text-slate-700">
+              Amount Paid (₹)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 5000"
+                value={renewAmount}
+                onChange={(e) => setRenewAmount(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </label>
+            {renewError && (
+              <p role="alert" className="mt-2 text-[13px] text-red-600">
+                {renewError}
+              </p>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeRenew}
+                className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={renewing}
+                className="h-9 rounded-[3px] bg-emerald-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {renewing ? "Renewing…" : "Renew Partner"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </section>

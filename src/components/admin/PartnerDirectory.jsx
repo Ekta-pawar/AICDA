@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Pencil, Plus, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Pencil, RefreshCw, Search, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMembers } from "@/lib/member-api";
@@ -8,11 +8,27 @@ import {
   getPartners,
   renewPartner,
 } from "@/lib/partner-api";
-import { inputClass, isExpired, isTodayOrPast } from "./directory-shared";
+import {
+  daysRemaining,
+  expiryLabel,
+  inputClass,
+  isExpired,
+  isExpiringSoon,
+  isTodayOrPast,
+  StatusBadge,
+} from "./directory-shared";
 import { DirectoryTableSkeleton } from "./DirectoryManagement";
 import { PartnerForm } from "./PartnerForm";
 
 const PAGE_SIZE = 10;
+
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "expiring", label: "Expiring Soon" },
+  { value: "expired", label: "Expired" },
+];
 
 function PartnerCardSkeleton() {
   return (
@@ -36,16 +52,6 @@ function PartnerCardSkeleton() {
   );
 }
 
-function StatusBadge({ active }) {
-  return (
-    <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-    >
-      {active ? "Active" : "Inactive"}
-    </span>
-  );
-}
-
 export function PartnerDirectory() {
   const [members, setMembers] = useState([]);
   const [partners, setPartners] = useState([]);
@@ -60,6 +66,7 @@ export function PartnerDirectory() {
 
   const [renewTarget, setRenewTarget] = useState(null);
   const [renewDate, setRenewDate] = useState("");
+  const [renewAmount, setRenewAmount] = useState("");
   const [renewing, setRenewing] = useState(false);
   const [renewError, setRenewError] = useState("");
 
@@ -93,8 +100,8 @@ export function PartnerDirectory() {
           partner.partnerId,
           partner.partnerName,
           partner.companyName,
-          partner.state?.stateName,
-          partner.city?.cityName,
+          partner.state?.stateName || partner.state,
+          partner.city?.cityName || partner.city,
           partner.mobile,
           partner.designation,
           partner.member?.memberName,
@@ -109,7 +116,9 @@ export function PartnerDirectory() {
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "active" && isEffectivelyActive) ||
-        (statusFilter === "inactive" && !isEffectivelyActive);
+        (statusFilter === "inactive" && !isEffectivelyActive) ||
+        (statusFilter === "expiring" && isExpiringSoon(partner)) ||
+        (statusFilter === "expired" && isExpired(partner));
 
       return matchesQuery && matchesStatus;
     });
@@ -118,11 +127,6 @@ export function PartnerDirectory() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const pageRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  const openNewForm = () => {
-    setEditingPartner(null);
-    setShowForm(true);
-  };
 
   const editPartner = (partner) => {
     setEditingPartner(partner);
@@ -168,12 +172,14 @@ export function PartnerDirectory() {
   const openRenew = (partner) => {
     setRenewTarget(partner);
     setRenewDate(partner.validityTo ? partner.validityTo.slice(0, 10) : "");
+    setRenewAmount("");
     setRenewError("");
   };
 
   const closeRenew = () => {
     setRenewTarget(null);
     setRenewDate("");
+    setRenewAmount("");
     setRenewError("");
   };
 
@@ -187,12 +193,21 @@ export function PartnerDirectory() {
       setRenewError("Validity date must be after today.");
       return;
     }
+    if (renewAmount && Number(renewAmount) < 0) {
+      setRenewError("Amount cannot be negative.");
+      return;
+    }
     setRenewing(true);
     setRenewError("");
     try {
-      await renewPartner(renewTarget.id, { validityTo: renewDate });
+      await renewPartner(renewTarget.id, {
+        validityTo: renewDate,
+        amount: renewAmount ? Number(renewAmount) : undefined,
+      });
       await loadAll();
-      toast.success(`${renewTarget.partnerName || "Partner"} renewed through ${renewDate}.`);
+      toast.success(
+        `${renewTarget.partnerName || "Partner"} renewed through ${renewDate}. Status: ${renewTarget.isActive ? "Active" : "Inactive"}.`,
+      );
       closeRenew();
     } catch (requestError) {
       const message = requestError.message || "Could not renew partner.";
@@ -207,15 +222,6 @@ export function PartnerDirectory() {
     <section className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border border-slate-300 bg-white px-3 py-2">
         <h2 className="text-lg font-bold">Manage Partners</h2>
-        {!showForm && (
-          <button
-            type="button"
-            onClick={openNewForm}
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[3px] bg-blue-600 px-3 text-[13px] font-semibold text-white hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" /> Add Partner
-          </button>
-        )}
       </div>
 
       {showForm && (
@@ -245,22 +251,26 @@ export function PartnerDirectory() {
 
       {!showForm && (
         <div className="rounded-[3px] border border-slate-300 bg-white p-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <label className="flex items-center gap-2 text-[13px] text-slate-600">
-              Status:
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="h-8 rounded-[3px] border border-slate-300 px-2 text-[13px]"
-              >
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </label>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter partners">
+              {FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(filter.value);
+                    setPage(1);
+                  }}
+                  className={`h-8 rounded-full px-3 text-[13px] font-semibold transition-colors ${
+                    statusFilter === filter.value
+                      ? "bg-blue-600 text-white"
+                      : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
             <label className="flex items-center gap-2 text-[13px] text-slate-600">
               Search:
               <span className="relative">
@@ -271,7 +281,8 @@ export function PartnerDirectory() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="h-8 w-full rounded-[3px] border border-slate-300 py-1 pl-7 pr-2 text-[13px] sm:w-56"
+                  placeholder="Partner ID, name, member, mobile, or company…"
+                  className="h-8 w-full rounded-[3px] border border-slate-300 py-1 pl-7 pr-2 text-[13px] sm:w-72"
                 />
               </span>
             </label>
@@ -293,7 +304,7 @@ export function PartnerDirectory() {
                   <PartnerCardSkeleton key={index} />
                 ))}
               </div>
-              <DirectoryTableSkeleton columns={7} />
+              <DirectoryTableSkeleton columns={8} />
             </>
           ) : pageRows.length === 0 ? (
             <div className="mt-3 flex min-h-48 flex-col items-center justify-center rounded-[3px] border border-dashed border-slate-300">
@@ -335,6 +346,14 @@ export function PartnerDirectory() {
                           <dt className="text-slate-400">Designation</dt>
                           <dd className="truncate text-slate-600">{partner.designation || "—"}</dd>
                         </div>
+                        <div>
+                          <dt className="text-slate-400">Days Remaining</dt>
+                          <dd
+                            className={`truncate font-semibold ${isExpired(partner) ? "text-red-600" : isExpiringSoon(partner) ? "text-amber-600" : "text-slate-600"}`}
+                          >
+                            {expiryLabel(daysRemaining(partner))}
+                          </dd>
+                        </div>
                       </dl>
                       <div className="mt-2 flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-2">
                         <button
@@ -371,6 +390,7 @@ export function PartnerDirectory() {
                       <th className="px-2.5 py-2">Company</th>
                       <th className="px-2.5 py-2">Mobile</th>
                       <th className="px-2.5 py-2">Status</th>
+                      <th className="px-2.5 py-2">Days Remaining</th>
                       <th className="px-2.5 py-2 text-right">Actions</th>
                     </tr>
                   </thead>
@@ -395,6 +415,11 @@ export function PartnerDirectory() {
                           <td className="px-2.5 py-2">
                             <StatusBadge active={isEffectivelyActive} />
                           </td>
+                          <td
+                            className={`px-2.5 py-2 font-semibold ${isExpired(partner) ? "text-red-600" : isExpiringSoon(partner) ? "text-amber-600" : "text-slate-600"}`}
+                          >
+                            {expiryLabel(daysRemaining(partner))}
+                          </td>
                           <td className="px-2.5 py-2">
                             <div className="flex justify-end gap-3">
                               <button
@@ -409,12 +434,12 @@ export function PartnerDirectory() {
                               >
                                 <Pencil className="h-3.5 w-3.5" /> Edit
                               </button>
-                              <button
+                              {/* <button
                                 onClick={() => deletePartner(partner)}
                                 className="inline-flex items-center gap-1 font-semibold text-red-600"
                               >
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>
@@ -458,6 +483,12 @@ export function PartnerDirectory() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
           role="dialog"
           aria-modal="true"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeRenew();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") closeRenew();
+          }}
         >
           <form
             onSubmit={confirmRenew}
@@ -474,6 +505,18 @@ export function PartnerDirectory() {
                 required
                 value={renewDate}
                 onChange={(e) => setRenewDate(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </label>
+            <label className="mt-3 block text-[13px] font-semibold text-slate-700">
+              Amount Paid (₹)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 5000"
+                value={renewAmount}
+                onChange={(e) => setRenewAmount(e.target.value)}
                 className={`${inputClass} mt-1`}
               />
             </label>

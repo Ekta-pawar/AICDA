@@ -318,12 +318,12 @@ export function EnquiryManagement() {
                             >
                               <Eye className="h-3.5 w-3.5" /> View
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => confirmDelete(entry)}
                               className="inline-flex items-center gap-1 font-semibold text-red-600 transition-colors hover:text-red-700"
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete
-                            </button>
+                            </button> */}
                           </div>
                         </td>
                       </tr>
@@ -372,7 +372,7 @@ export function EnquiryManagement() {
             className="w-full max-w-lg animate-in rounded-[3px] bg-white shadow-2xl fade-in-0 zoom-in-95 duration-150"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3">
+            <div className="flex items-start justify-between gap-3 bg-slate-50 px-5 py-3">
               <div className="min-w-0">
                 {/* <p className="text-[13px] font-bold uppercase tracking-wide text-slate-500">
                   Enquiry Details
@@ -424,7 +424,7 @@ export function EnquiryManagement() {
             </div>
 
             <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">
-              <button
+              {/* <button
                 onClick={() => {
                   confirmDelete(viewing);
                   setViewing(null);
@@ -432,7 +432,7 @@ export function EnquiryManagement() {
                 className="inline-flex h-9 items-center gap-1.5 rounded-[3px] px-3 text-[13px] font-semibold text-red-600 transition-colors hover:bg-red-50"
               >
                 <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
+              </button> */}
               <button
                 onClick={() => setViewing(null)}
                 className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"

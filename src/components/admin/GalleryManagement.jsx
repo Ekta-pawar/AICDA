@@ -373,12 +373,12 @@ export function GalleryManagement() {
                     >
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => setDeleting(image)}
                       className="inline-flex items-center gap-1 text-red-600 transition-colors hover:text-red-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               ))}
@@ -441,12 +441,12 @@ export function GalleryManagement() {
                           >
                             <Pencil className="h-3.5 w-3.5" /> Edit
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => setDeleting(image)}
                             className="inline-flex items-center gap-1 font-semibold text-red-600 transition-colors hover:text-red-700"
                           >
                             <Trash2 className="h-3.5 w-3.5" /> Delete
-                          </button>
+                          </button> */}
                         </div>
                       </td>
                     </tr>
@@ -503,13 +503,13 @@ export function GalleryManagement() {
             >
               Cancel
             </button>
-            <button
+            {/* <button
               onClick={remove}
               disabled={working}
               className="inline-flex h-9 items-center gap-2 rounded-[3px] bg-red-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
             >
               {working && <LoaderCircle className="h-4 w-4 animate-spin" />}Delete
-            </button>
+            </button> */}
           </div>
         </Modal>
       )}

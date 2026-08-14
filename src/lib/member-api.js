@@ -18,6 +18,7 @@ function buildMemberFormData(member) {
     dateOfJoining: member.dateOfJoining,
     aadharNo: member.aadharNo,
     state: member.state,
+    district: member.district,
     city: member.city,
     validityTo: member.validityTo,
     amount: member.amount,

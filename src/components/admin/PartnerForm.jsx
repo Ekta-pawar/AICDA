@@ -8,6 +8,8 @@ import {
   FieldRow,
   SectionHeading,
   StateCombobox,
+  digitsOnly,
+  fieldClass,
   inputClass,
   textareaClass,
 } from "./directory-shared";
@@ -29,8 +31,8 @@ function buildInitialForm(partner, lockedMember) {
       companyAddress: lockedMember?.companyAddress || "",
       companyTelephone: lockedMember?.companyTelephone || "",
       packetNo: lockedMember?.packetNo || "",
-      state: lockedMember?.state?.stateName || "",
-      city: lockedMember?.city?.cityName || "",
+      state: lockedMember?.state?.stateName || lockedMember?.state || "",
+      city: lockedMember?.city?.cityName || lockedMember?.city || "",
       dateOfJoining: "",
       validityTo: "",
       amount: "",
@@ -53,8 +55,8 @@ function buildInitialForm(partner, lockedMember) {
     companyAddress: partner.companyAddress || "",
     companyTelephone: partner.companyTelephone || "",
     packetNo: partner.packetNo || "",
-    state: partner.state?.stateName || "",
-    city: partner.city?.cityName || "",
+    state: partner.state?.stateName || partner.state || "",
+    city: partner.city?.cityName || partner.city || "",
     dateOfJoining: partner.dateOfJoining ? partner.dateOfJoining.slice(0, 10) : "",
     validityTo: partner.validityTo ? partner.validityTo.slice(0, 10) : "",
     amount: "",
@@ -62,7 +64,7 @@ function buildInitialForm(partner, lockedMember) {
   };
 }
 
-function MemberPicker({ members, selectedMember, onSelect, disabled }) {
+function MemberPicker({ members = [], selectedMember, onSelect, disabled }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -155,7 +157,7 @@ function MemberPicker({ members, selectedMember, onSelect, disabled }) {
   );
 }
 
-export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved }) {
+export function PartnerForm({ partner, members = [], lockedMember, onCancel, onSaved }) {
   const isEdit = Boolean(partner);
   // Locked: the caller already knows which member this is for (e.g. adding
   // a partner from that member's own details page) — skip the picker.
@@ -168,6 +170,7 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
   const [photoPreview, setPhotoPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -193,7 +196,19 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
     return () => URL.revokeObjectURL(url);
   }, [form.photo]);
 
-  const updateField = (name, value) => setForm((prev) => ({ ...prev, [name]: value }));
+  const updateField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+      setError("");
+    }
+  };
+
+  const failValidation = (name, message) => {
+    setError(message);
+    setFieldErrors({ [name]: message });
+    toast.error(message);
+  };
 
   const selectMember = (member) => {
     setSelectedMember(member);
@@ -204,22 +219,35 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
       companyAddress: member?.companyAddress || "",
       companyTelephone: member?.companyTelephone || "",
       packetNo: member?.packetNo || "",
-      state: member?.state?.stateName || "",
-      city: member?.city?.cityName || "",
+      state: member?.state?.stateName || member?.state || "",
+      city: member?.city?.cityName || member?.city || "",
     }));
+    if (fieldErrors.memberId) {
+      setFieldErrors((prev) => ({ ...prev, memberId: undefined }));
+      setError("");
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!isEdit && !form.memberId) {
-      setError("Choose the Member this partner belongs to.");
+      failValidation("memberId", "Choose the Member this partner belongs to.");
       return;
     }
     if (!form.partnerName.trim()) {
-      setError("Partner Name is required.");
+      failValidation("partnerName", "Partner Name is required.");
+      return;
+    }
+    if (form.mobile && form.mobile.length !== 10) {
+      failValidation("mobile", "Mobile number must be exactly 10 digits.");
+      return;
+    }
+    if (form.aadharNo && form.aadharNo.length !== 12) {
+      failValidation("aadharNo", "Aadhar Card No. must be exactly 12 digits.");
       return;
     }
     setError("");
+    setFieldErrors({});
     setSaving(true);
     try {
       const saved = isEdit ? await updatePartner(partner.id, form) : await createPartner(form);
@@ -277,7 +305,7 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
 
       <div className="overflow-hidden rounded-[3px]">
         <SectionHeading>Member</SectionHeading>
-        <FieldRow label="Linked Member" required>
+        <FieldRow label="Linked Member" required error={fieldErrors.memberId}>
           <MemberPicker
             members={members}
             selectedMember={selectedMember}
@@ -291,11 +319,11 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
         {/* <SectionHeading>Personal Details</SectionHeading> */}
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="flex flex-col">
-            <FieldRow label="Partner Name" required>
+            <FieldRow label="Partner Name" required error={fieldErrors.partnerName}>
               <input
                 value={form.partnerName}
                 onChange={(e) => updateField("partnerName", e.target.value)}
-                className={inputClass}
+                className={fieldClass(fieldErrors.partnerName)}
               />
             </FieldRow>
             <FieldRow label="Father's Name">
@@ -305,11 +333,14 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
                 className={inputClass}
               />
             </FieldRow>
-            <FieldRow label="Mobile">
+            <FieldRow label="Mobile" error={fieldErrors.mobile}>
               <input
                 value={form.mobile}
-                onChange={(e) => updateField("mobile", e.target.value)}
-                className={inputClass}
+                onChange={(e) => updateField("mobile", digitsOnly(e.target.value, 10))}
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="10-digit mobile number"
+                className={fieldClass(fieldErrors.mobile)}
               />
             </FieldRow>
             <FieldRow label="Residential Telephone">
@@ -328,11 +359,14 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
                 className={inputClass}
               />
             </FieldRow>
-            <FieldRow label="Aadhar Card No.">
+            <FieldRow label="Aadhar Card No." error={fieldErrors.aadharNo}>
               <input
                 value={form.aadharNo}
-                onChange={(e) => updateField("aadharNo", e.target.value)}
-                className={inputClass}
+                onChange={(e) => updateField("aadharNo", digitsOnly(e.target.value, 12))}
+                inputMode="numeric"
+                maxLength={12}
+                placeholder="12-digit Aadhar number"
+                className={fieldClass(fieldErrors.aadharNo)}
               />
             </FieldRow>
             <FieldRow label="Designation">
@@ -357,7 +391,7 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
         {/* <SectionHeading>Company Details</SectionHeading> */}
         {!isEdit && (
           <p className="bg-amber-50 px-4 py-2 text-xs text-amber-700">
-            Auto-filled from the linked member — editable after the partner is created.
+            Auto-filled from the linked member — feel free to adjust before saving.
           </p>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2">
@@ -366,70 +400,46 @@ export function PartnerForm({ partner, members, lockedMember, onCancel, onSaved 
               <input
                 value={form.companyName}
                 onChange={(e) => updateField("companyName", e.target.value)}
-                readOnly={!isEdit}
-                className={`${inputClass} ${!isEdit ? "bg-slate-50 text-slate-500" : ""}`}
+                className={inputClass}
               />
             </FieldRow>
             <FieldRow label="Company Address">
               <input
                 value={form.companyAddress}
                 onChange={(e) => updateField("companyAddress", e.target.value)}
-                readOnly={!isEdit}
-                className={`${inputClass} ${!isEdit ? "bg-slate-50 text-slate-500" : ""}`}
+                className={inputClass}
               />
             </FieldRow>
             <FieldRow label="Company Tel.">
               <input
                 value={form.companyTelephone}
                 onChange={(e) => updateField("companyTelephone", e.target.value)}
-                readOnly={!isEdit}
-                className={`${inputClass} ${!isEdit ? "bg-slate-50 text-slate-500" : ""}`}
+                className={inputClass}
               />
             </FieldRow>
           </div>
           <div className="flex flex-col">
-            {isEdit ? (
-              <>
-                <FieldRow label="State">
-                  <StateCombobox
-                    value={form.state}
-                    onChange={(value) => {
-                      updateField("state", value);
-                      updateField("city", "");
-                    }}
-                  />
-                </FieldRow>
-                <FieldRow label="City">
-                  <CityCombobox
-                    value={form.city}
-                    onChange={(value) => updateField("city", value)}
-                  />
-                </FieldRow>
-              </>
-            ) : (
-              <>
-                <FieldRow label="State">
-                  <input
-                    value={form.state}
-                    readOnly
-                    className={`${inputClass} bg-slate-50 text-slate-500`}
-                  />
-                </FieldRow>
-                <FieldRow label="City">
-                  <input
-                    value={form.city}
-                    readOnly
-                    className={`${inputClass} bg-slate-50 text-slate-500`}
-                  />
-                </FieldRow>
-              </>
-            )}
+            <FieldRow label="State">
+              <StateCombobox
+                value={form.state}
+                onChange={(value) => {
+                  updateField("state", value);
+                  // StateCombobox fires onChange on every keystroke and on
+                  // re-picking the same option — only wipe City when the
+                  // state actually changed, so re-confirming the current
+                  // state doesn't silently discard a City already set.
+                  if (value !== form.state) updateField("city", "");
+                }}
+              />
+            </FieldRow>
+            <FieldRow label="City">
+              <CityCombobox value={form.city} onChange={(value) => updateField("city", value)} />
+            </FieldRow>
             <FieldRow label="Packet No.">
               <input
                 value={form.packetNo}
                 onChange={(e) => updateField("packetNo", e.target.value)}
-                readOnly={!isEdit}
-                className={`${inputClass} ${!isEdit ? "bg-slate-50 text-slate-500" : ""}`}
+                className={inputClass}
               />
             </FieldRow>
           </div>

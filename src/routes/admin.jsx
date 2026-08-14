@@ -24,9 +24,10 @@ import { ChangePasswordModal } from "@/components/admin/ChangePasswordModal";
 
 export const Route = createFileRoute("/admin")({ component: AdminRoute });
 
+// Order here is the order the sidebar renders in — Super Admins stays last,
+// after Enquiries, since it's the most sensitive item on the menu.
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
-  { label: "Super Admins", icon: ShieldCheck, to: "/admin/super-admins" },
   { label: "Banner Master", icon: GalleryHorizontal, to: "/admin/banners" },
   { label: "Manage Directory", icon: BookUser, to: "/admin/directory" },
   { label: "Reset Directory", icon: RotateCcw, to: "/admin/reset-directory" },
@@ -36,6 +37,7 @@ const navigation = [
   // { label: "Our Staff", icon: UserCog, to: "/admin/our-staff" },
   // { label: "Complaint", icon: MessageSquareWarning, to: "/admin/complaint" },
   { label: "Enquiries", icon: Inbox, to: "/admin/enquiries" },
+  { label: "Super Admins", icon: ShieldCheck, to: "/admin/super-admins" },
 ];
 
 function AdminRoute() {
@@ -103,13 +105,6 @@ function AdminDashboard() {
 
   const isNavItemActive = (item) => {
     if (item.to === "/admin") return pathname === "/admin";
-    // "/admin/directory/partener" is nested under "/admin/directory" but has
-    // its own nav entry, so it must not also light up "Manage Directory".
-    if (item.to === "/admin/directory") {
-      return (
-        pathname.startsWith("/admin/directory") && !pathname.startsWith("/admin/directory/partener")
-      );
-    }
     return pathname.startsWith(item.to);
   };
   const currentItem = navigation.find(isNavItemActive);
@@ -151,23 +146,23 @@ function AdminDashboard() {
                 key={item.label}
                 to={item.to}
                 onClick={() => setMenuOpen(false)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium transition ${isActive ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors duration-150 ${isActive ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-300 hover:bg-white/10 hover:text-white"}`}
               >
-                <Icon className="h-4 w-4" />
-                {item.label}
-                {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {isActive && <ChevronRight className="h-4 w-4 shrink-0" />}
               </Link>
             );
           })}
         </nav>
 
         <div className="border-t border-white/10 p-4">
-          <a
+          {/* <a
             href="/"
             className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white"
           >
             <LogOut className="h-4 w-4" /> View website
-          </a>
+          </a> */}
           <button
             onClick={handleLogout}
             className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white"

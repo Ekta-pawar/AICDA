@@ -9,14 +9,27 @@ import {
   LoaderCircle,
   Pencil,
   Plus,
+  RefreshCw,
   Users,
   X,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getMemberDetails } from "@/lib/member-api";
-import { buildPartnerSlug, isExpired, parseMemberSlug } from "./directory-shared";
+import { getMemberDetails, renewMember } from "@/lib/member-api";
+import {
+  buildPartnerSlug,
+  daysRemaining,
+  expiryLabel,
+  getMissingProfileFields,
+  inputClass,
+  isExpired,
+  isProfileIncomplete,
+  isTodayOrPast,
+  parseMemberSlug,
+  ProfileIncompleteBadge,
+  StatusBadge,
+} from "./directory-shared";
 import { MemberPrintableForm } from "./MemberPrintableForm";
 import { PartnerForm } from "./PartnerForm";
 
@@ -29,36 +42,11 @@ function InfoRow({ label, value }) {
   );
 }
 
-function StatusBadge({ active }) {
-  return (
-    <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"}`}
-    >
-      {active ? "Active" : "Inactive"}
-    </span>
-  );
-}
-
 function formatDate(value) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-}
-
-// "(19 days left)" / "(Expired 5 days ago)" next to a validity date, so the
-// admin doesn't have to do the date math themselves.
-function daysUntil(value) {
-  if (!value) return null;
-  const target = new Date(value);
-  if (Number.isNaN(target.getTime())) return null;
-  const today = new Date();
-  target.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  const days = Math.round((target - today) / 86400000);
-  if (days > 0) return `${days} day${days === 1 ? "" : "s"} left`;
-  if (days === 0) return "expires today";
-  return `expired ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} ago`;
 }
 
 function toCsvCell(value) {
@@ -159,6 +147,12 @@ export function MemberDetails({ slug }) {
   const [downloadingForm, setDownloadingForm] = useState(false);
   const printableFormRef = useRef(null);
 
+  const [showRenew, setShowRenew] = useState(false);
+  const [renewDate, setRenewDate] = useState("");
+  const [renewAmount, setRenewAmount] = useState("");
+  const [renewing, setRenewing] = useState(false);
+  const [renewError, setRenewError] = useState("");
+
   const loadMember = () => {
     setLoading(true);
     setError("");
@@ -220,8 +214,57 @@ export function MemberDetails({ slug }) {
     }
   };
 
-  const validityHint = member ? daysUntil(member.validityTo) : null;
+  const validityHint = member ? expiryLabel(daysRemaining(member)) : null;
   const currentRenewalId = member?.renewals?.[0]?.id;
+
+  const openRenew = () => {
+    setRenewDate(member.validityTo ? member.validityTo.slice(0, 10) : "");
+    setRenewAmount("");
+    setRenewError("");
+    setShowRenew(true);
+  };
+
+  const closeRenew = () => {
+    setShowRenew(false);
+    setRenewDate("");
+    setRenewAmount("");
+    setRenewError("");
+  };
+
+  const confirmRenew = async (event) => {
+    event.preventDefault();
+    if (!renewDate) {
+      setRenewError("Choose the new validity date.");
+      return;
+    }
+    if (isTodayOrPast(renewDate)) {
+      setRenewError("Validity date must be after today.");
+      return;
+    }
+    if (renewAmount && Number(renewAmount) < 0) {
+      setRenewError("Amount cannot be negative.");
+      return;
+    }
+    setRenewing(true);
+    setRenewError("");
+    try {
+      await renewMember(member.id, {
+        validityTo: renewDate,
+        amount: renewAmount ? Number(renewAmount) : undefined,
+      });
+      await loadMember();
+      toast.success(
+        `${member.memberName || "Member"} renewed through ${renewDate}. Status: ${member.isActive ? "Active" : "Inactive"}.`,
+      );
+      closeRenew();
+    } catch (requestError) {
+      const message = requestError.message || "Could not renew member.";
+      setRenewError(message);
+      toast.error(message);
+    } finally {
+      setRenewing(false);
+    }
+  };
 
   return (
     <section className="space-y-2">
@@ -233,19 +276,28 @@ export function MemberDetails({ slug }) {
           <ArrowLeft className="h-4 w-4" /> Back to Directory
         </Link>
         {member && (
-          <button
-            type="button"
-            onClick={handleDownloadForm}
-            disabled={downloadingForm}
-            className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {downloadingForm ? (
-              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <FileDown className="h-3.5 w-3.5" />
-            )}
-            Download form
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={openRenew}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[3px] bg-emerald-600 px-3 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-700"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Renew
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadForm}
+              disabled={downloadingForm}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[3px] border border-slate-300 px-3 text-[13px] font-semibold text-slate-600 transition-colors hover:border-sky-300 hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {downloadingForm ? (
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileDown className="h-3.5 w-3.5" />
+              )}
+              Download form
+            </button>
+          </div>
         )}
       </div>
 
@@ -281,9 +333,17 @@ export function MemberDetails({ slug }) {
               {member.memberName}
             </h2>
             <p className="text-center text-[13px] text-slate-500">Member ID: {member.memberId}</p>
-            <div className="mt-2 flex justify-center">
+            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
               <StatusBadge active={isEffectivelyActive} />
+              {isProfileIncomplete(member) && (
+                <ProfileIncompleteBadge missingFields={getMissingProfileFields(member)} />
+              )}
             </div>
+            {isProfileIncomplete(member) && (
+              <p className="mt-2 px-3 text-center text-xs text-amber-700">
+                Missing: {getMissingProfileFields(member).join(", ")}
+              </p>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -296,7 +356,10 @@ export function MemberDetails({ slug }) {
                 <InfoRow label="Company" value={member.companyName} />
                 <InfoRow
                   label="State / City"
-                  value={[member.city?.cityName, member.state?.stateName]
+                  value={[
+                    member.city?.cityName || member.city,
+                    member.state?.stateName || member.state,
+                  ]
                     .filter(Boolean)
                     .join(", ")}
                 />
@@ -519,6 +582,73 @@ export function MemberDetails({ slug }) {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {showRenew && member && (
+        <div
+          className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-slate-950/45 p-4 fade-in-0 duration-150"
+          role="dialog"
+          aria-modal="true"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeRenew();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") closeRenew();
+          }}
+        >
+          <form
+            onSubmit={confirmRenew}
+            className="w-full max-w-sm animate-in rounded-[3px] bg-white p-5 shadow-2xl zoom-in-95 duration-150"
+          >
+            <h3 className="text-lg font-bold text-slate-800">Renew membership</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {member.memberName || "This member"} — set the new validity date.
+            </p>
+            <label className="mt-4 block text-[13px] font-semibold text-slate-700">
+              New Validity To
+              <input
+                type="date"
+                required
+                value={renewDate}
+                onChange={(e) => setRenewDate(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </label>
+            <label className="mt-3 block text-[13px] font-semibold text-slate-700">
+              Amount Paid (₹)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 5000"
+                value={renewAmount}
+                onChange={(e) => setRenewAmount(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </label>
+            {renewError && (
+              <p role="alert" className="mt-2 text-[13px] text-red-600">
+                {renewError}
+              </p>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeRenew}
+                className="h-9 rounded-[3px] bg-slate-100 px-4 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={renewing}
+                className="h-9 rounded-[3px] bg-emerald-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {renewing ? "Renewing…" : "Renew Member"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </section>

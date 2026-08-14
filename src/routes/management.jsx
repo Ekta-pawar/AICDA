@@ -285,6 +285,8 @@ function OfficeBearerSlide({ bearer }) {
           </div>
         </div>
         <div className="mt-3 space-y-2">
+          <DetailRow label="Name" value={bearer.name} />
+          <DetailRow label="ID" value={bearer.memberId} />
           <DetailRow label="Designation" value={bearer.designation} />
           <DetailRow label="S/o" value={bearer.sOf} />
           <DetailRow label="Office Address" value={bearer.officeAddress} />

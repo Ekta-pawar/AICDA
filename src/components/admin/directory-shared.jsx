@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown, LoaderCircle, Users, UserCheck, UserX } from "lucide-react";
 import { searchCities } from "@/lib/locations-api";
 
@@ -98,21 +99,39 @@ export const DESIGNATIONS = [
   "Partner",
 ];
 
+// Strips anything non-numeric as the user types and caps length — backs the
+// Mobile/Aadhaar fields so bad characters never make it into the field at
+// all, instead of only being caught by the server after submit.
+export function digitsOnly(value, maxLength) {
+  const digits = (value || "").replace(/\D/g, "");
+  return maxLength ? digits.slice(0, maxLength) : digits;
+}
+
 export const inputClass =
   "h-8 w-full rounded-[3px] border border-slate-300 bg-white px-2 text-[13px] text-slate-800 outline-none transition-colors hover:border-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-200";
 
 export const textareaClass =
   "w-full rounded-[3px] border border-slate-300 bg-white px-2 py-1 text-[13px] text-slate-800 outline-none transition-colors hover:border-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-200";
 
-export function FieldRow({ label, required, children }) {
+export function FieldRow({ label, required, error, children }) {
   return (
     <div className=" px-3 py-2 transition-colors">
       <label className="mb-1 block text-[13px] font-semibold text-slate-700">
         {label} {required && <span className="text-red-600">*</span>}:
       </label>
       {children}
+      {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
     </div>
   );
+}
+
+// Appends red-border/focus-ring styles onto inputClass when a field has a
+// validation error, so the input itself flags the problem alongside the
+// message FieldRow renders underneath it.
+export function fieldClass(hasError) {
+  return hasError
+    ? `${inputClass} border-red-400 focus:border-red-500 focus:ring-red-200`
+    : inputClass;
 }
 
 export function SectionHeading({ children }) {
@@ -125,6 +144,56 @@ export function SectionHeading({ children }) {
 
 const MAX_SUGGESTIONS = 10;
 
+// Tracks the anchor's on-screen position while a portaled dropdown is open,
+// recomputing on scroll/resize so it stays pinned under the input.
+function useDropdownPosition(open, anchorRef) {
+  const [position, setPosition] = useState(null);
+
+  useEffect(() => {
+    if (!open || !anchorRef.current) {
+      setPosition(null);
+      return;
+    }
+    const update = () => {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, anchorRef]);
+
+  return position;
+}
+
+// Suggestion lists render into a portal (document.body) instead of as an
+// `absolute` child, so they're never clipped — an absolutely positioned
+// dropdown gets cut off the instant its anchor sits inside any scrollable
+// ancestor, which every combobox here does once it's used inside a modal.
+function DropdownPortal({ open, anchorRef, contentRef, children }) {
+  const position = useDropdownPosition(open, anchorRef);
+  if (!open || !position || typeof document === "undefined") return null;
+  return createPortal(
+    <div
+      ref={contentRef}
+      style={{
+        position: "fixed",
+        top: position.top,
+        left: position.left,
+        width: position.width,
+        zIndex: 9999,
+      }}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+}
+
 // Shared freeform-with-suggestions combobox: text input + filtered dropdown
 // (top N matches), keyboard nav, click-outside close, and a fallback to use
 // whatever was typed if nothing matches. Backs Designation and State; City
@@ -133,6 +202,7 @@ function SuggestCombobox({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const containerRef = useRef(null);
+  const listRef = useRef(null);
 
   const filtered = useMemo(() => {
     const query = value.trim().toLowerCase();
@@ -144,7 +214,9 @@ function SuggestCombobox({ value, onChange, options, placeholder }) {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      const insideAnchor = containerRef.current?.contains(event.target);
+      const insideList = listRef.current?.contains(event.target);
+      if (!insideAnchor && !insideList) {
         setOpen(false);
       }
     }
@@ -206,8 +278,8 @@ function SuggestCombobox({ value, onChange, options, placeholder }) {
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
-      {open && (
-        <ul className="absolute z-20 mt-1.5 max-h-52 w-full origin-top animate-in overflow-auto rounded-lg border border-slate-200 bg-white p-1.5 text-[13px] shadow-xl fade-in-0 zoom-in-95 duration-150">
+      <DropdownPortal open={open} anchorRef={containerRef} contentRef={listRef}>
+        <ul className="max-h-52 w-full origin-top animate-in overflow-auto rounded-lg border border-slate-200 bg-white p-1.5 text-[13px] shadow-xl fade-in-0 zoom-in-95 duration-150">
           {filtered.length === 0 ? (
             <li className="px-3 py-2 text-slate-400">No matches — press Enter to use “{value}”</li>
           ) : (
@@ -231,7 +303,7 @@ function SuggestCombobox({ value, onChange, options, placeholder }) {
             ))
           )}
         </ul>
-      )}
+      </DropdownPortal>
     </div>
   );
 }
@@ -269,10 +341,13 @@ export function CityCombobox({ value, onChange }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      const insideAnchor = containerRef.current?.contains(event.target);
+      const insideList = listRef.current?.contains(event.target);
+      if (!insideAnchor && !insideList) {
         setOpen(false);
       }
     }
@@ -318,8 +393,8 @@ export function CityCombobox({ value, onChange }) {
         className={inputClass}
       />
 
-      {open && (
-        <ul className="absolute z-20 mt-1.5 max-h-52 w-full origin-top animate-in overflow-auto rounded-lg border border-slate-200 bg-white p-1.5 text-[13px] shadow-xl fade-in-0 zoom-in-95 duration-150">
+      <DropdownPortal open={open} anchorRef={containerRef} contentRef={listRef}>
+        <ul className="max-h-52 w-full origin-top animate-in overflow-auto rounded-lg border border-slate-200 bg-white p-1.5 text-[13px] shadow-xl fade-in-0 zoom-in-95 duration-150">
           {loading ? (
             <li className="flex items-center gap-2 px-3 py-2 text-slate-400">
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> Searching…
@@ -351,8 +426,29 @@ export function CityCombobox({ value, onChange }) {
             ))
           )}
         </ul>
-      )}
+      </DropdownPortal>
     </div>
+  );
+}
+
+// Plain <select> of districts for whatever state is currently typed in —
+// disabled until that state resolves to a known Indian state (see
+// getDistrictsForStateName in lib/india-districts.js).
+export function DistrictSelect({ value, onChange, districts, disabled }) {
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      disabled={disabled}
+      className={`${inputClass} disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400`}
+    >
+      <option value="">{disabled ? "Select a state first" : "Select District"}</option>
+      {districts.map((district) => (
+        <option key={district} value={district}>
+          {district}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -364,6 +460,138 @@ export function isExpired(record) {
   today.setHours(0, 0, 0, 0);
   validityDate.setHours(0, 0, 0, 0);
   return validityDate < today;
+}
+
+export const EXPIRING_SOON_DAYS = 7;
+
+// Whole days between today and validityTo — negative once expired. Shares
+// the same date-normalization as isExpired so the two never disagree.
+export function daysRemaining(record) {
+  if (!record?.validityTo) return null;
+  const validityDate = new Date(record.validityTo);
+  if (Number.isNaN(validityDate.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  validityDate.setHours(0, 0, 0, 0);
+  return Math.round((validityDate - today) / 86400000);
+}
+
+// Plain-language wording for daysRemaining() so nobody has to do the math
+// themselves: "7 days remaining" / "1 day remaining" / "Expires today" / "Expired".
+export function expiryLabel(days) {
+  if (days === null || days === undefined) return "—";
+  if (days < 0) return "Expired";
+  if (days === 0) return "Expires today";
+  return `${days} day${days === 1 ? "" : "s"} remaining`;
+}
+
+export function isExpiringSoon(record) {
+  return isWithinDays(record, EXPIRING_SOON_DAYS);
+}
+
+// Same idea as isExpiringSoon but with an admin-chosen threshold instead of
+// the fixed default — backs the "Within __ days" input on the filter bar.
+export function isWithinDays(record, days) {
+  const remaining = daysRemaining(record);
+  return remaining !== null && remaining >= 0 && remaining <= days;
+}
+
+// Mirrors every field the Member form collects, except Amount Paid and
+// Note — the form itself labels those two "Optional". Any of the rest left
+// blank marks the profile incomplete. Keyed by the same field name MemberForm
+// uses in its own `form` state, so MemberForm can reuse this list to show a
+// live "still missing" hint as the admin types, instead of only finding out
+// after saving that something didn't count.
+export const PROFILE_FIELD_KEYS = [
+  ["memberId", "Member ID"],
+  ["memberName", "Member Name"],
+  ["fatherName", "Father's Name"],
+  ["photo", "Photo"],
+  ["residentialAddress", "Residential Address"],
+  ["mobile", "Mobile"],
+  ["residentialTelephone", "Residential Telephone"],
+  ["panCardNo", "PAN Card No."],
+  ["designation", "Designation"],
+  ["companyName", "Company Name"],
+  ["companyAddress", "Company Address"],
+  ["state", "State"],
+  ["district", "District"],
+  // City is optional — a blank City never counts toward Profile Incomplete.
+  ["companyTelephone", "Company Telephone"],
+  ["packetNo", "Packet No."],
+  ["dateOfJoining", "Date of Joining"],
+  ["aadharNo", "Aadhar Card No."],
+  ["validityTo", "Validity To"],
+];
+
+// The API returns state as a plain string on member records (unlike the
+// object shape used elsewhere for e.g. partner lookups) — fall back to the
+// object form too so this keeps working if that ever changes.
+const PROFILE_FIELD_GETTERS = {
+  state: (m) => m.state?.stateName || m.state,
+};
+
+const PROFILE_REQUIRED_FIELDS = PROFILE_FIELD_KEYS.map(([key, label]) => [
+  label,
+  PROFILE_FIELD_GETTERS[key] || ((m) => m[key]),
+]);
+
+export function getMissingProfileFields(member) {
+  if (!member) return [];
+  return PROFILE_REQUIRED_FIELDS.filter(
+    ([, getField]) => !String(getField(member) || "").trim(),
+  ).map(([label]) => label);
+}
+
+export function isProfileIncomplete(member) {
+  return getMissingProfileFields(member).length > 0;
+}
+
+export function StatusBadge({ active, className = "" }) {
+  return (
+    <span
+      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${active ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"} ${className}`}
+    >
+      {active ? "Active" : "Inactive"}
+    </span>
+  );
+}
+
+// A visible on/off switch for the manual Active/Inactive flag — clicking it
+// slides the knob and calls onClick, same as before, just no longer looks
+// like plain colored text.
+export function StatusToggle({ active, onClick, title }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      aria-pressed={active}
+      className="inline-flex items-center gap-2"
+    >
+      <span
+        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${active ? "bg-emerald-500" : "bg-slate-300"}`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${active ? "translate-x-4" : "translate-x-0.5"}`}
+        />
+      </span>
+      <span className={`text-xs font-semibold ${active ? "text-emerald-700" : "text-slate-600"}`}>
+        {active ? "Active" : "Inactive"}
+      </span>
+    </button>
+  );
+}
+
+export function ProfileIncompleteBadge({ missingFields = [] }) {
+  return (
+    <span
+      title={missingFields.length ? `Missing: ${missingFields.join(", ")}` : undefined}
+      className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700"
+    >
+      Profile Incomplete
+    </span>
+  );
 }
 
 // A renewal is meant to push the validity into the future — a date of today

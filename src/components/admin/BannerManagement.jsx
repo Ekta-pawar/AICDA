@@ -229,12 +229,12 @@ export function BannerManagement() {
                     >
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => setDeletingBanner(banner)}
                       className="inline-flex items-center gap-1 text-red-600 transition-colors hover:text-red-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               ))}
@@ -277,12 +277,12 @@ export function BannerManagement() {
                           >
                             <Pencil className="h-3.5 w-3.5" /> Edit
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => setDeletingBanner(banner)}
                             className="inline-flex items-center gap-1 font-semibold text-red-600 transition-colors hover:text-red-700"
                           >
                             <Trash2 className="h-3.5 w-3.5" /> Delete
-                          </button>
+                          </button> */}
                         </div>
                       </td>
                     </tr>
@@ -430,14 +430,14 @@ export function BannerManagement() {
             >
               Cancel
             </button>
-            <button
+            {/* <button
               onClick={confirmDeleteBanner}
               disabled={removing}
               className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition-all hover:bg-red-700 active:scale-95 disabled:opacity-60 disabled:active:scale-100"
             >
               {removing && <LoaderCircle className="h-4 w-4 animate-spin" />}
               Delete
-            </button>
+            </button> */}
           </div>
         </Modal>
       )}

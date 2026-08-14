@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createMember, updateMember } from "@/lib/member-api";
+import { getDistrictsForStateName } from "@/lib/india-districts";
 import {
-  CityCombobox,
   DesignationCombobox,
+  DistrictSelect,
   FieldRow,
+  PROFILE_FIELD_KEYS,
   SectionHeading,
   StateCombobox,
+  digitsOnly,
+  fieldClass,
   inputClass,
   textareaClass,
 } from "./directory-shared";
@@ -27,6 +31,7 @@ function buildInitialForm(member) {
       companyName: "",
       companyAddress: "",
       state: "",
+      district: "",
       city: "",
       companyTelephone: "",
       packetNo: "",
@@ -50,8 +55,9 @@ function buildInitialForm(member) {
     designation: member.designation || "",
     companyName: member.companyName || "",
     companyAddress: member.companyAddress || "",
-    state: member.state?.stateName || "",
-    city: member.city?.cityName || "",
+    state: member.state?.stateName || member.state || "",
+    district: member.district || "",
+    city: member.city?.cityName || member.city || "",
     companyTelephone: member.companyTelephone || "",
     packetNo: member.packetNo || "",
     dateOfJoining: member.dateOfJoining ? member.dateOfJoining.slice(0, 10) : "",
@@ -71,6 +77,7 @@ export function MemberForm({ member, onCancel, onSaved }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -93,15 +100,53 @@ export function MemberForm({ member, onCancel, onSaved }) {
     return () => URL.revokeObjectURL(url);
   }, [form.photo]);
 
-  const updateField = (name, value) => setForm((prev) => ({ ...prev, [name]: value }));
+  const districtOptions = useMemo(() => getDistrictsForStateName(form.state), [form.state]);
+
+  // Live view of exactly what the "Profile Incomplete" check will still flag
+  // if saved right now — Photo counts as present if either a new file was
+  // picked this session or one already exists from before, since form.photo
+  // itself resets to null on every edit even when a photo is already saved.
+  const missingProfileFields = useMemo(() => {
+    return PROFILE_FIELD_KEYS.filter(([key]) => {
+      if (key === "photo") return !(form.photo || existingPhotoUrl);
+      return !String(form[key] || "").trim();
+    }).map(([, label]) => label);
+  }, [form, existingPhotoUrl]);
+
+  const updateField = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+      setError("");
+    }
+  };
+
+  const failValidation = (name, message) => {
+    setError(message);
+    setFieldErrors({ [name]: message });
+    toast.error(message);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!form.memberId.trim() || !form.memberName.trim()) {
-      setError("Member ID and Member Name are required.");
+    if (!form.memberId.trim()) {
+      failValidation("memberId", "Member ID is required.");
+      return;
+    }
+    if (!form.memberName.trim()) {
+      failValidation("memberName", "Member Name is required.");
+      return;
+    }
+    if (form.mobile && form.mobile.length !== 10) {
+      failValidation("mobile", "Mobile number must be exactly 10 digits.");
+      return;
+    }
+    if (form.aadharNo && form.aadharNo.length !== 12) {
+      failValidation("aadharNo", "Aadhar Card No. must be exactly 12 digits.");
       return;
     }
     setError("");
+    setFieldErrors({});
     setSaving(true);
     try {
       const saved = isEdit ? await updateMember(member.id, form) : await createMember(form);
@@ -110,6 +155,9 @@ export function MemberForm({ member, onCancel, onSaved }) {
     } catch (requestError) {
       const message = requestError.message || "Could not save member.";
       setError(message);
+      // Backend returns "Member ID already exists..." for a duplicate — flag
+      // that specific field instead of just the generic banner.
+      if (/member id/i.test(message)) setFieldErrors({ memberId: message });
       toast.error(message);
     } finally {
       setSaving(false);
@@ -161,18 +209,18 @@ export function MemberForm({ member, onCancel, onSaved }) {
         {/* <SectionHeading>Personal Details</SectionHeading> */}
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="flex flex-col">
-            <FieldRow label="Member ID" required>
+            <FieldRow label="Member ID" required error={fieldErrors.memberId}>
               <input
                 value={form.memberId}
                 onChange={(e) => updateField("memberId", e.target.value)}
-                className={inputClass}
+                className={fieldClass(fieldErrors.memberId)}
               />
             </FieldRow>
-            <FieldRow label="Member Name" required>
+            <FieldRow label="Member Name" required error={fieldErrors.memberName}>
               <input
                 value={form.memberName}
                 onChange={(e) => updateField("memberName", e.target.value)}
-                className={inputClass}
+                className={fieldClass(fieldErrors.memberName)}
               />
             </FieldRow>
             <FieldRow label="Father's Name">
@@ -182,11 +230,14 @@ export function MemberForm({ member, onCancel, onSaved }) {
                 className={inputClass}
               />
             </FieldRow>
-            <FieldRow label="Mobile">
+            <FieldRow label="Mobile" error={fieldErrors.mobile}>
               <input
                 value={form.mobile}
-                onChange={(e) => updateField("mobile", e.target.value)}
-                className={inputClass}
+                onChange={(e) => updateField("mobile", digitsOnly(e.target.value, 10))}
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="10-digit mobile number"
+                className={fieldClass(fieldErrors.mobile)}
               />
             </FieldRow>
           </div>
@@ -205,11 +256,14 @@ export function MemberForm({ member, onCancel, onSaved }) {
                 className={inputClass}
               />
             </FieldRow>
-            <FieldRow label="Aadhar Card No.">
+            <FieldRow label="Aadhar Card No." error={fieldErrors.aadharNo}>
               <input
                 value={form.aadharNo}
-                onChange={(e) => updateField("aadharNo", e.target.value)}
-                className={inputClass}
+                onChange={(e) => updateField("aadharNo", digitsOnly(e.target.value, 12))}
+                inputMode="numeric"
+                maxLength={12}
+                placeholder="12-digit Aadhar number"
+                className={fieldClass(fieldErrors.aadharNo)}
               />
             </FieldRow>
             <FieldRow label="Designation">
@@ -262,21 +316,44 @@ export function MemberForm({ member, onCancel, onSaved }) {
                 value={form.state}
                 onChange={(value) => {
                   updateField("state", value);
-                  updateField("city", "");
+                  // StateCombobox fires onChange on every keystroke and on
+                  // re-picking the same option — only wipe District/City when
+                  // the state actually changed, so re-confirming the current
+                  // state doesn't silently discard a District/City already set.
+                  if (value !== form.state) {
+                    updateField("district", "");
+                    updateField("city", "");
+                  }
                 }}
               />
             </FieldRow>
-            <FieldRow label="City">
-              <CityCombobox value={form.city} onChange={(value) => updateField("city", value)} />
+            <FieldRow label="District">
+              <DistrictSelect
+                value={form.district}
+                onChange={(value) => updateField("district", value)}
+                districts={districtOptions}
+                disabled={districtOptions.length === 0}
+              />
             </FieldRow>
-            <FieldRow label="Packet No.">
+            <FieldRow label="City">
               <input
-                value={form.packetNo}
-                onChange={(e) => updateField("packetNo", e.target.value)}
+                value={form.city}
+                onChange={(e) => updateField("city", e.target.value)}
+                placeholder="Type the city name"
                 className={inputClass}
               />
             </FieldRow>
           </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          <div className="hidden md:block" aria-hidden="true" />
+          <FieldRow label="Packet No.">
+            <input
+              value={form.packetNo}
+              onChange={(e) => updateField("packetNo", e.target.value)}
+              className={inputClass}
+            />
+          </FieldRow>
         </div>
       </div>
 
@@ -327,6 +404,12 @@ export function MemberForm({ member, onCancel, onSaved }) {
           Validity starts from the joining date automatically — only the expiry needs to be set.
         </p> */}
       </div>
+
+      {missingProfileFields.length > 0 && (
+        <p className="rounded-[3px] bg-amber-50 px-3 py-2 text-[13px] text-amber-700">
+          Profile will still show as Incomplete — missing: {missingProfileFields.join(", ")}
+        </p>
+      )}
 
       {error && (
         <p role="alert" className="rounded-[3px] px-3 py-2 text-[13px] text-red-700">
