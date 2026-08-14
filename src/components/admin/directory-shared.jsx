@@ -196,9 +196,10 @@ function DropdownPortal({ open, anchorRef, contentRef, children }) {
 
 // Shared freeform-with-suggestions combobox: text input + filtered dropdown
 // (top N matches), keyboard nav, click-outside close, and a fallback to use
-// whatever was typed if nothing matches. Backs Designation and State; City
-// needs its own variant below since its suggestions come from the backend.
-function SuggestCombobox({ value, onChange, options, placeholder }) {
+// whatever was typed if nothing matches. Backs Designation, State, and
+// District; City needs its own variant below since its suggestions come
+// from the backend.
+function SuggestCombobox({ value, onChange, options, placeholder, disabled }) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const containerRef = useRef(null);
@@ -260,25 +261,27 @@ function SuggestCombobox({ value, onChange, options, placeholder }) {
           setHighlighted(0);
           setOpen(true);
         }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={handleKeyDown}
+        onFocus={() => !disabled && setOpen(true)}
+        onKeyDown={disabled ? undefined : handleKeyDown}
         placeholder={placeholder}
         role="combobox"
         aria-expanded={open}
         aria-autocomplete="list"
-        className={`${inputClass} pr-8`}
+        disabled={disabled}
+        className={`${inputClass} pr-8 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400`}
       />
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => !disabled && setOpen((prev) => !prev)}
         tabIndex={-1}
         aria-label="Toggle options"
-        className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center text-slate-400 transition-colors hover:text-sky-600"
+        disabled={disabled}
+        className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center text-slate-400 transition-colors hover:text-sky-600 disabled:cursor-not-allowed disabled:hover:text-slate-400"
       >
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
-      <DropdownPortal open={open} anchorRef={containerRef} contentRef={listRef}>
+      <DropdownPortal open={open && !disabled} anchorRef={containerRef} contentRef={listRef}>
         <ul className="max-h-52 w-full origin-top animate-in overflow-auto rounded-lg border border-slate-200 bg-white p-1.5 text-[13px] shadow-xl fade-in-0 zoom-in-95 duration-150">
           {filtered.length === 0 ? (
             <li className="px-3 py-2 text-slate-400">No matches — press Enter to use “{value}”</li>
@@ -431,24 +434,19 @@ export function CityCombobox({ value, onChange }) {
   );
 }
 
-// Plain <select> of districts for whatever state is currently typed in —
-// disabled until that state resolves to a known Indian state (see
-// getDistrictsForStateName in lib/india-districts.js).
+// Districts for whatever state is currently typed in — disabled until that
+// state resolves to a known Indian state (see getDistrictsForStateName in
+// lib/india-districts.js). Same typeahead combobox as State/Designation
+// instead of a plain <select>, so it matches their look and feel.
 export function DistrictSelect({ value, onChange, districts, disabled }) {
   return (
-    <select
+    <SuggestCombobox
       value={value}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={onChange}
+      options={districts}
+      placeholder={disabled ? "Select a state first" : "Type or choose a district"}
       disabled={disabled}
-      className={`${inputClass} disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400`}
-    >
-      <option value="">{disabled ? "Select a state first" : "Select District"}</option>
-      {districts.map((district) => (
-        <option key={district} value={district}>
-          {district}
-        </option>
-      ))}
-    </select>
+    />
   );
 }
 

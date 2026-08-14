@@ -205,7 +205,7 @@ export function DashboardOverview() {
         <h3 className="mb-2.5 px-1 text-[13px] font-bold uppercase tracking-wide text-slate-500">
           Members
         </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {loading || !memberCards
             ? Array.from({ length: 6 }).map((_, index) => <DashboardStatCardSkeleton key={index} />)
             : memberCards.map((card) => (
@@ -223,10 +223,10 @@ export function DashboardOverview() {
       </div>
 
       <div>
-        <h3 className="mb-2.5 px-1 text-[13px] font-bold uppercase tracking-wide text-slate-500">
+        {/* <h3 className="mb-2.5 px-1 text-[13px] font-bold uppercase tracking-wide text-slate-500">
           Partners
-        </h3>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        </h3> */}
+        {/* <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {loading || !stats ? (
             <DashboardStatCardSkeleton />
           ) : (
@@ -238,7 +238,7 @@ export function DashboardOverview() {
               to="/admin/directory/partener"
             />
           )}
-        </div>
+        </div> */}
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">

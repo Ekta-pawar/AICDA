@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Pencil, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Eye, Pencil, RefreshCw, Search, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMembers } from "@/lib/member-api";
@@ -7,15 +8,17 @@ import {
   deletePartner as deletePartnerRequest,
   getPartners,
   renewPartner,
+  togglePartnerStatus,
 } from "@/lib/partner-api";
 import {
+  buildPartnerSlug,
   daysRemaining,
   expiryLabel,
   inputClass,
   isExpired,
   isExpiringSoon,
   isTodayOrPast,
-  StatusBadge,
+  StatusToggle,
 } from "./directory-shared";
 import { DirectoryTableSkeleton } from "./DirectoryManagement";
 import { PartnerForm } from "./PartnerForm";
@@ -155,6 +158,20 @@ export function PartnerDirectory() {
     }
   };
 
+  const toggleStatus = async (partner) => {
+    if (isExpired(partner)) {
+      toast(`${partner.partnerName || "This partner"} is expired — use Renew to make them active.`);
+      return;
+    }
+    try {
+      await togglePartnerStatus(partner.id);
+      await loadAll();
+    } catch (requestError) {
+      setListError(requestError.message || "Could not update partner status.");
+      toast.error(requestError.message || "Could not update partner status.");
+    }
+  };
+
   const deletePartner = (partner) => {
     toast(`Remove ${partner.partnerName || "this partner"} from the directory?`, {
       description: "This action cannot be undone.",
@@ -251,7 +268,7 @@ export function PartnerDirectory() {
 
       {!showForm && (
         <div className="rounded-[3px] border border-slate-300 bg-white p-3">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter partners">
               {FILTERS.map((filter) => (
                 <button
@@ -325,7 +342,15 @@ export function PartnerDirectory() {
                           </p>
                           <p className="text-xs text-slate-500">ID: {partner.partnerId}</p>
                         </div>
-                        <StatusBadge active={isEffectivelyActive} />
+                        <div className="shrink-0">
+                          <StatusToggle
+                            active={isEffectivelyActive}
+                            onClick={() => toggleStatus(partner)}
+                            title={
+                              isExpired(partner) ? "Expired — use Renew to activate" : undefined
+                            }
+                          />
+                        </div>
                       </div>
                       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                         <div>
@@ -362,6 +387,13 @@ export function PartnerDirectory() {
                         >
                           <RefreshCw className="h-3.5 w-3.5" /> Renew
                         </button>
+                        <Link
+                          to="/admin/directory/partner/$slug/details"
+                          params={{ slug: buildPartnerSlug(partner) }}
+                          className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-sky-700"
+                        >
+                          <Eye className="h-3.5 w-3.5" /> View
+                        </Link>
                         <button
                           onClick={() => editPartner(partner)}
                           className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-sky-700"
@@ -413,7 +445,13 @@ export function PartnerDirectory() {
                           </td>
                           <td className="px-2.5 py-2 text-slate-600">{partner.mobile || "—"}</td>
                           <td className="px-2.5 py-2">
-                            <StatusBadge active={isEffectivelyActive} />
+                            <StatusToggle
+                              active={isEffectivelyActive}
+                              onClick={() => toggleStatus(partner)}
+                              title={
+                                isExpired(partner) ? "Expired — use Renew to activate" : undefined
+                              }
+                            />
                           </td>
                           <td
                             className={`px-2.5 py-2 font-semibold ${isExpired(partner) ? "text-red-600" : isExpiringSoon(partner) ? "text-amber-600" : "text-slate-600"}`}
@@ -428,6 +466,13 @@ export function PartnerDirectory() {
                               >
                                 <RefreshCw className="h-3.5 w-3.5" /> Renew
                               </button>
+                              <Link
+                                to="/admin/directory/partner/$slug/details"
+                                params={{ slug: buildPartnerSlug(partner) }}
+                                className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-sky-700"
+                              >
+                                <Eye className="h-3.5 w-3.5" /> View
+                              </Link>
                               <button
                                 onClick={() => editPartner(partner)}
                                 className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-sky-700"

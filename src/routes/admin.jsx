@@ -31,7 +31,7 @@ const navigation = [
   { label: "Banner Master", icon: GalleryHorizontal, to: "/admin/banners" },
   { label: "Manage Directory", icon: BookUser, to: "/admin/directory" },
   { label: "Reset Directory", icon: RotateCcw, to: "/admin/reset-directory" },
-  { label: "Reset Management", icon: RotateCw, to: "/admin/reset-management" },
+  // { label: "Reset Management", icon: RotateCw, to: "/admin/reset-management" },
   { label: "Image", icon: Image, to: "/admin/image" },
   // { label: "Expired Members", icon: AlertTriangle, to: "/admin/expired-members" },
   // { label: "Our Staff", icon: UserCog, to: "/admin/our-staff" },

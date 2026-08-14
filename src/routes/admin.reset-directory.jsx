@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SectionPlaceholder } from "@/components/admin/SectionPlaceholder";
+import { ResetDirectory } from "@/components/admin/ResetDirectory";
 
 export const Route = createFileRoute("/admin/reset-directory")({
-  component: () => <SectionPlaceholder section="Reset Directory" />,
+  component: ResetDirectory,
 });

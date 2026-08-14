@@ -79,6 +79,10 @@ export async function updatePartner(id, partner) {
   );
 }
 
+export async function togglePartnerStatus(id) {
+  return unwrapData(await api(`/partners/${id}/status`, { method: "PATCH" }));
+}
+
 export async function renewPartner(id, { validityTo, amount, note }) {
   return unwrapData(
     await api(`/partners/${id}/renew`, {

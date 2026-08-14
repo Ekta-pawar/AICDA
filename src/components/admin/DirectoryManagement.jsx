@@ -744,35 +744,35 @@ export function DirectoryManagement() {
                         >
                           <Users className="h-3.5 w-3.5" /> Partners: {partnerSummary(member)}
                         </Link>
-                        <div className="flex flex-wrap justify-end gap-4">
+                        <div className="grid grid-cols-3 gap-1">
                           <button
                             onClick={() => openAddPartnerForMember(member)}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                            className="inline-flex items-center justify-center gap-1 rounded-[3px] px-1.5 py-1.5 text-[13px] font-semibold text-blue-600 transition-colors hover:bg-blue-50 active:scale-95"
                           >
                             <Handshake className="h-3.5 w-3.5" /> Add Partner
                           </button>
                           <Link
                             to="/admin/directory/$slug/details"
                             params={{ slug: buildMemberSlug(member) }}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                            className="inline-flex items-center justify-center gap-1 rounded-[3px] px-1.5 py-1.5 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-sky-700 active:scale-95"
                           >
                             <Eye className="h-3.5 w-3.5" /> View
                           </Link>
                           <button
                             onClick={() => openRenew(member)}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-emerald-700 transition-colors hover:text-emerald-800"
+                            className="inline-flex items-center justify-center gap-1 rounded-[3px] px-1.5 py-1.5 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 active:scale-95"
                           >
                             <RefreshCw className="h-3.5 w-3.5" /> Renew
                           </button>
                           <button
                             onClick={() => editMember(member)}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                            className="inline-flex items-center justify-center gap-1 rounded-[3px] px-1.5 py-1.5 text-[13px] font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-sky-700 active:scale-95"
                           >
                             <Pencil className="h-3.5 w-3.5" /> Edit
                           </button>
                           <button
                             onClick={() => deleteMember(member)}
-                            className="inline-flex items-center gap-1 text-[13px] font-semibold text-red-600 transition-colors hover:text-red-700"
+                            className="inline-flex items-center justify-center gap-1 rounded-[3px] px-1.5 py-1.5 text-[13px] font-semibold text-red-600 transition-colors hover:bg-red-50 active:scale-95"
                           >
                             <Trash2 className="h-3.5 w-3.5" /> Delete
                           </button>
@@ -783,9 +783,9 @@ export function DirectoryManagement() {
                 })}
               </div>
 
-              <div className="mt-3 hidden overflow-x-auto scrollbar-hide rounded-[3px] border border-slate-200 md:block">
+              <div className="mt-3 hidden max-h-[70vh] overflow-auto scrollbar-hide rounded-[3px] border border-slate-200 md:block">
                 <table className="w-full min-w-175 text-left text-[13px]">
-                  <thead className="bg-slate-50 text-slate-500">
+                  <thead className="sticky top-0 z-10 bg-slate-50 text-slate-500 shadow-[0_1px_0_0] shadow-slate-200">
                     <tr>
                       <th className="px-2.5 py-2">No</th>
                       <th className="px-2.5 py-2">Member ID</th>
@@ -853,35 +853,35 @@ export function DirectoryManagement() {
                             </Link>
                           </td>
                           <td className="px-2.5 py-2">
-                            <div className="flex justify-end gap-3">
+                            <div className="flex justify-end gap-1">
                               <button
                                 onClick={() => openAddPartnerForMember(member)}
-                                className="inline-flex items-center gap-1 font-semibold text-blue-600 transition-colors hover:text-blue-700"
+                                className="inline-flex items-center gap-1 rounded-[3px] px-1.5 py-1 font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 active:scale-95"
                               >
                                 <Handshake className="h-3.5 w-3.5" /> Add Partner
                               </button>
                               <Link
                                 to="/admin/directory/$slug/details"
                                 params={{ slug: buildMemberSlug(member) }}
-                                className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                                className="inline-flex items-center gap-1 rounded-[3px] px-1.5 py-1 font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-sky-700 active:scale-95"
                               >
                                 <Eye className="h-3.5 w-3.5" /> View
                               </Link>
                               <button
                                 onClick={() => openRenew(member)}
-                                className="inline-flex items-center gap-1 font-semibold text-emerald-700 transition-colors hover:text-emerald-800"
+                                className="inline-flex items-center gap-1 rounded-[3px] px-1.5 py-1 font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 hover:text-emerald-800 active:scale-95"
                               >
                                 <RefreshCw className="h-3.5 w-3.5" /> Renew
                               </button>
                               <button
                                 onClick={() => editMember(member)}
-                                className="inline-flex items-center gap-1 font-semibold text-slate-600 transition-colors hover:text-sky-700"
+                                className="inline-flex items-center gap-1 rounded-[3px] px-1.5 py-1 font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-sky-700 active:scale-95"
                               >
                                 <Pencil className="h-3.5 w-3.5" /> Edit
                               </button>
                               {/* <button
                                 onClick={() => deleteMember(member)}
-                                className="inline-flex items-center gap-1 font-semibold text-red-600 transition-colors hover:text-red-700"
+                                className="inline-flex items-center gap-1 rounded-[3px] px-1.5 py-1 font-semibold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 active:scale-95"
                               >
                                 <Trash2 className="h-3.5 w-3.5" /> Delete
                               </button> */}

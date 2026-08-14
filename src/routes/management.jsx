@@ -241,7 +241,7 @@ function OfficeBearerSlide({ bearer }) {
           <User className="h-16 w-16 text-muted-foreground/40" />
         )}
       </div>
-      <div className="rounded-xl border border-border bg-card p-6 shadow-(--shadow-card)">
+      <div className="relative rounded-xl border border-border bg-card p-6 shadow-(--shadow-card)">
         <div className="relative">
           <h3 className="text-center text-lg font-bold text-primary">Member Detail</h3>
           <div className="absolute right-0 top-0 flex gap-1">
@@ -273,17 +273,17 @@ function OfficeBearerSlide({ bearer }) {
                 <Share2 className="h-4 w-4" />
               )}
             </button>
-            {isValidityActive(bearer.validityTo) && (
-              <span
-                title="Membership valid"
-                aria-label="Membership valid"
-                className="flex items-center rounded-md p-1.5 text-emerald-600"
-              >
-                <ThumbsUp className="h-4 w-4" />
-              </span>
-            )}
           </div>
         </div>
+        {isValidityActive(bearer.validityTo) && (
+          <span
+            title="Membership valid"
+            aria-label="Membership valid"
+            className="absolute bottom-3 right-3 flex items-center justify-center text-emerald-500"
+          >
+            <ThumbsUp className="h-8 w-8 fill-emerald-500" />
+          </span>
+        )}
         <div className="mt-3 space-y-2">
           <DetailRow label="Name" value={bearer.name} />
           <DetailRow label="ID" value={bearer.memberId} />

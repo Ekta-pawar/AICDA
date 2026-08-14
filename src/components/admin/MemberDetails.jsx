@@ -335,15 +335,7 @@ export function MemberDetails({ slug }) {
             <p className="text-center text-[13px] text-slate-500">Member ID: {member.memberId}</p>
             <div className="mt-2 flex flex-wrap justify-center gap-1.5">
               <StatusBadge active={isEffectivelyActive} />
-              {isProfileIncomplete(member) && (
-                <ProfileIncompleteBadge missingFields={getMissingProfileFields(member)} />
-              )}
             </div>
-            {isProfileIncomplete(member) && (
-              <p className="mt-2 px-3 text-center text-xs text-amber-700">
-                Missing: {getMissingProfileFields(member).join(", ")}
-              </p>
-            )}
           </div>
 
           <div className="space-y-3">

@@ -345,16 +345,13 @@ export function MemberForm({ member, onCancel, onSaved }) {
             </FieldRow>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="hidden md:block" aria-hidden="true" />
-          <FieldRow label="Packet No.">
-            <input
-              value={form.packetNo}
-              onChange={(e) => updateField("packetNo", e.target.value)}
-              className={inputClass}
-            />
-          </FieldRow>
-        </div>
+        <FieldRow label="Packet No.">
+          <input
+            value={form.packetNo}
+            onChange={(e) => updateField("packetNo", e.target.value)}
+            className={inputClass}
+          />
+        </FieldRow>
       </div>
 
       <div className="overflow-hidden rounded-[3px]">
