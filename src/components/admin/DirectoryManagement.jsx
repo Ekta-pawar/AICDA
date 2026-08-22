@@ -28,13 +28,11 @@ import {
   expiryLabel,
   inputClass,
   isExpired,
-  getMissingProfileFields,
   isExpiringSoon,
   isProfileIncomplete,
   isTodayOrPast,
   isWithinDays,
   MemberStatsCards,
-  ProfileIncompleteBadge,
   StatusToggle,
 } from "./directory-shared";
 import { MemberForm } from "./MemberForm";
@@ -713,11 +711,6 @@ export function DirectoryManagement() {
                           />
                         </div>
                       </div>
-                      {statusFilter === "incomplete" && isProfileIncomplete(member) && (
-                        <div className="mt-1.5">
-                          <ProfileIncompleteBadge missingFields={getMissingProfileFields(member)} />
-                        </div>
-                      )}
                       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                         <div>
                           <dt className="text-slate-400">Company</dt>
@@ -817,13 +810,6 @@ export function DirectoryManagement() {
                             >
                               {member.memberName}
                             </Link>
-                            {statusFilter === "incomplete" && isProfileIncomplete(member) && (
-                              <div className="mt-1">
-                                <ProfileIncompleteBadge
-                                  missingFields={getMissingProfileFields(member)}
-                                />
-                              </div>
-                            )}
                           </td>
                           <td className="px-2.5 py-2 text-slate-600">
                             {member.companyName || "—"}

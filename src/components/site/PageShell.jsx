@@ -19,7 +19,7 @@ function pickBanner(key) {
   return BANNERS[h % BANNERS.length].url;
 }
 
-export function PageShell({ title, subtitle, children, hideSidebar, bannerKey }) {
+export function PageShell({ title, children, hideSidebar, bannerKey }) {
   const adminBanner = useBanner(bannerKey);
   const bg = adminBanner || pickBanner(title);
   return (
@@ -46,16 +46,6 @@ export function PageShell({ title, subtitle, children, hideSidebar, bannerKey })
           >
             {title}
           </motion.h1>
-          {subtitle && (
-            <motion.p
-              initial={false}
-              animate={{ opacity: 0.9, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.15 }}
-              className="max-w-2xl text-base sm:text-lg opacity-90"
-            >
-              {subtitle}
-            </motion.p>
-          )}
         </div>
       </section>
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">

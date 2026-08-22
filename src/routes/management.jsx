@@ -244,19 +244,19 @@ function OfficeBearerSlide({ bearer }) {
       <div className="relative rounded-xl border border-border bg-card p-6 shadow-(--shadow-card)">
         <div className="relative">
           <h3 className="text-center text-lg font-bold text-primary">Member Detail</h3>
-          <div className="absolute right-0 top-0 flex gap-1">
+          <div className="absolute right-0 top-0 flex gap-1.5">
             <button
               type="button"
               onClick={handleDownload}
               disabled={exporting}
               title="Download ID card"
               aria-label="Download ID card"
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+              className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
             >
               {exporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
               )}
             </button>
             <button
@@ -265,12 +265,12 @@ function OfficeBearerSlide({ bearer }) {
               disabled={sharing}
               title="Share card"
               aria-label="Share card"
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+              className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
             >
               {sharing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Share2 className="h-4 w-4" />
+                <Share2 className="h-5 w-5" />
               )}
             </button>
           </div>

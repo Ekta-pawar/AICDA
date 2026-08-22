@@ -84,7 +84,12 @@ function Page() {
       </Prose>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <label className="relative sm:w-72">
+        {!loading && (
+          <p className="text-sm font-semibold text-primary">
+            Total Dealers Found : <span className="text-foreground">{filteredImages.length}</span>
+          </p>
+        )}
+        <label className="relative sm:w-72 sm:ml-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
@@ -93,11 +98,6 @@ function Page() {
             className="h-10 w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm"
           />
         </label>
-        {!loading && (
-          <p className="text-sm font-semibold text-primary">
-            Total Dealers Found : <span className="text-foreground">{filteredImages.length}</span>
-          </p>
-        )}
       </div>
 
       {loading ? (
@@ -168,7 +168,7 @@ function Page() {
               <img
                 src={current.imageUrl}
                 alt={current.title}
-                className="max-h-[80vh] w-full object-contain bg-black"
+                className="max-h-[80vh] w-full object-fill bg-black"
               />
 
               {filteredImages.length > 1 && (

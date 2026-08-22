@@ -120,13 +120,13 @@ function GalleryForm({ image, onClose, onSaved }) {
             src={preview}
             controls
             muted
-            className="h-48 w-full rounded-[3px] border border-slate-200 bg-black object-contain"
+            className="h-48 w-full rounded-[3px] border border-slate-200 bg-black object-fill"
           />
         ) : (
           <img
             src={preview}
             alt="Preview"
-            className="h-48 w-full rounded-[3px] border border-slate-200 object-contain"
+            className="h-48 w-full rounded-[3px] border border-slate-200 object-fill"
           />
         ))}
       {error && (
@@ -349,7 +349,7 @@ export function GalleryManagement() {
                       <img
                         src={imageUrl(image)}
                         alt={image.title || "Gallery"}
-                        className="h-14 w-14 rounded-[3px] border border-slate-200 object-cover"
+                        className="h-14 w-14 rounded-[3px] border border-slate-200 object-fill"
                       />
                     )}
                     {isVideoUrl(imageUrl(image)) && (
@@ -415,7 +415,7 @@ export function GalleryManagement() {
                             <img
                               src={imageUrl(image)}
                               alt={image.title || "Gallery"}
-                              className="h-14 w-14 rounded-[3px] border border-slate-200 object-cover"
+                              className="h-14 w-14 rounded-[3px] border border-slate-200 object-fill"
                             />
                           )}
                           {isVideoUrl(imageUrl(image)) && (

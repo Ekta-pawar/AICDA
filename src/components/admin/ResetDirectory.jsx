@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { Handshake, RefreshCw, Search, Tag, Users, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, Handshake, RefreshCw, Search, Tag, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { getMembers, renewMember, updateMember } from "@/lib/member-api";
 import { getPartners, renewPartner, updatePartner } from "@/lib/partner-api";
 import {
+  buildMemberSlug,
+  buildPartnerSlug,
   daysRemaining,
   DesignationCombobox,
   expiryLabel,
@@ -32,6 +35,12 @@ function displayIdOf(tab, record) {
 }
 function nameOf(tab, record) {
   return tab === "members" ? record.memberName : record.partnerName;
+}
+function detailsRouteOf(tab) {
+  return tab === "members" ? "/admin/directory/$slug/details" : "/admin/directory/partner/$slug/details";
+}
+function slugOf(tab, record) {
+  return tab === "members" ? buildMemberSlug(record) : buildPartnerSlug(record);
 }
 
 export function ResetDirectory() {
@@ -271,10 +280,14 @@ export function ResetDirectory() {
                 return (
                   <div key={record.id} className="rounded-[3px] border border-slate-300 p-2.5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
+                      <Link
+                        to={detailsRouteOf(tab)}
+                        params={{ slug: slugOf(tab, record) }}
+                        className="min-w-0 transition-colors hover:underline"
+                      >
                         <p className="truncate text-[13px] font-semibold">{nameOf(tab, record)}</p>
                         <p className="text-xs text-slate-500">ID: {displayIdOf(tab, record)}</p>
-                      </div>
+                      </Link>
                       <StatusBadge active={isEffectivelyActive} />
                     </div>
                     <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
@@ -296,6 +309,13 @@ export function ResetDirectory() {
                       </div>
                     </dl>
                     <div className="mt-2 flex flex-wrap justify-end gap-4 border-t border-slate-100 pt-2">
+                      <Link
+                        to={detailsRouteOf(tab)}
+                        params={{ slug: slugOf(tab, record) }}
+                        className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-600 hover:text-sky-700"
+                      >
+                        <Eye className="h-3.5 w-3.5" /> View
+                      </Link>
                       <button
                         onClick={() => openRenew(record)}
                         className="inline-flex items-center gap-1 text-[13px] font-semibold text-emerald-700 hover:text-emerald-800"
@@ -338,7 +358,15 @@ export function ResetDirectory() {
                         className={`border-t border-slate-200 ${index % 2 === 0 ? "bg-rose-50/70" : "bg-white"}`}
                       >
                         <td className="px-2.5 py-2 font-medium">{displayIdOf(tab, record)}</td>
-                        <td className="px-2.5 py-2">{nameOf(tab, record)}</td>
+                        <td className="px-2.5 py-2">
+                          <Link
+                            to={detailsRouteOf(tab)}
+                            params={{ slug: slugOf(tab, record) }}
+                            className="transition-colors hover:text-sky-700 hover:underline"
+                          >
+                            {nameOf(tab, record)}
+                          </Link>
+                        </td>
                         <td className="px-2.5 py-2 text-slate-600">{record.designation || "—"}</td>
                         <td className="px-2.5 py-2 text-slate-600">{record.mobile || "—"}</td>
                         <td className="px-2.5 py-2">
@@ -351,6 +379,13 @@ export function ResetDirectory() {
                         </td>
                         <td className="px-2.5 py-2">
                           <div className="flex justify-end gap-3">
+                            <Link
+                              to={detailsRouteOf(tab)}
+                              params={{ slug: slugOf(tab, record) }}
+                              className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-sky-700"
+                            >
+                              <Eye className="h-3.5 w-3.5" /> View
+                            </Link>
                             <button
                               onClick={() => openRenew(record)}
                               className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-800"

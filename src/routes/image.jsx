@@ -127,13 +127,13 @@ function Page() {
                     src={url}
                     muted
                     preload="metadata"
-                    className="aspect-[3/4] h-55 w-full bg-black object-contain object-top transition-transform duration-300 group-hover:scale-105"
+                    className="aspect-[3/4] h-55 w-full bg-black object-fill transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
                   <img
                     src={url}
                     alt={image.title}
-                    className="aspect-[3/4] h-55 w-full object-contain object-top transition-transform duration-300 group-hover:scale-105"
+                    className="aspect-[3/4] h-55 w-full object-fill transition-transform duration-300 group-hover:scale-105"
                   />
                 )}
 
@@ -194,7 +194,7 @@ function Page() {
                 <img
                   src={imageUrl(current)}
                   alt={current.title}
-                  className="max-h-[80vh] w-full object-contain bg-black"
+                  className="max-h-[80vh] w-full object-fill bg-black"
                 />
               )}
 
