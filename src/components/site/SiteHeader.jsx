@@ -51,6 +51,7 @@ export function SiteHeader() {
             <span className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-primary" /> info@aicda.in
             </span>
+            <span className="opacity-70">RTO Form | Registration No. - S-55924/2006</span>
             <Link
               to="/become-member"
               style={becomeMemberStyle}

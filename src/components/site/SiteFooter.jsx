@@ -1,21 +1,42 @@
 import { Link } from "@tanstack/react-router";
 import { primaryNav } from "./nav-data";
 
+const vehicleDetailLinks = [
+  { label: "Parivahan Sewa", href: "https://parivahan.gov.in/" },
+  {
+    label: "NextGen mParivahan app",
+    href: "https://play.google.com/store/apps/details?id=com.nic.mparivahan&hl=en_IN&gl=US",
+  },
+  { label: "eChallan Parivahan", href: "https://echallan.parivahan.gov.in/index/accused-challan" },
+  { label: "National Informatics Centre", href: "https://www.nic.gov.in" },
+  { label: "Ministry of Road Transport & Highways", href: "https://morth.gov.in/#/" },
+];
+
 export function SiteFooter() {
   return (
     <footer className="mt-16 bg-primary-deep text-primary-foreground sm:mt-20">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 md:grid-cols-3 md:gap-10">
         <div>
-          <h3
-            className="text-xl font-black mb-3"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-          >
-            All India Car Dealers Association
-          </h3>
-          <p className="text-sm opacity-80 leading-relaxed">
-            The apex body uniting authorized and independent car dealers across India — advocating
-            for fair policy, transparent transfer procedures, and modern retail standards.
-          </p>
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider opacity-90">
+            Vehicle Detail Links
+            <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-black tracking-wide text-primary-deep">
+              NEW
+            </span>
+          </h4>
+          <ul className="space-y-1.5 text-sm">
+            {vehicleDetailLinks.map((item) => (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="opacity-80 hover:opacity-100 hover:underline"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
         <div>
           <h4 className="text-sm font-bold uppercase tracking-wider mb-3 opacity-90">

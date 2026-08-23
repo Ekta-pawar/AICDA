@@ -120,7 +120,7 @@ function GalleryForm({ image, onClose, onSaved }) {
             src={preview}
             controls
             muted
-            className="h-48 w-full rounded-[3px] border border-slate-200 bg-black object-fill"
+            className="h-48 w-full rounded-[3px] border border-slate-200 bg-black object-contain"
           />
         ) : (
           <img

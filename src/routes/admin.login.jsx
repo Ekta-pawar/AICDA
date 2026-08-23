@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { login } from "@/lib/auth-api";
 
 export const Route = createFileRoute("/admin/login")({ component: AdminLogin });
@@ -8,19 +9,17 @@ function AdminLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
       navigate({ to: "/admin" });
     } catch (requestError) {
-      setError(requestError.message || "Unable to sign in. Please try again.");
+      toast.error(requestError.message || "Unable to sign in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -76,12 +75,6 @@ function AdminLogin() {
                 className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-3 focus:ring-primary/15"
               />
             </div>
-
-            {error && (
-              <p role="alert" className="text-sm font-medium text-red-600">
-                {error}
-              </p>
-            )}
 
             <button
               type="submit"

@@ -127,7 +127,7 @@ function Page() {
                     src={url}
                     muted
                     preload="metadata"
-                    className="aspect-[3/4] h-55 w-full bg-black object-fill transition-transform duration-300 group-hover:scale-105"
+                    className="aspect-[3/4] h-55 w-full bg-black object-contain object-top transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
                   <img

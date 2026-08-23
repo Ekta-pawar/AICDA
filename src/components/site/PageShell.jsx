@@ -49,14 +49,14 @@ export function PageShell({ title, children, hideSidebar, bannerKey }) {
         </div>
       </section>
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-        <div className="grid gap-6 lg:grid-cols-[16rem_1fr] lg:gap-8">
-          {!hideSidebar && <Sidebar />}
+        <div className="grid gap-6 lg:grid-cols-[1fr_16rem] lg:gap-8">
+          {!hideSidebar && <Sidebar className="lg:order-2" />}
           <motion.div
             initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6 }}
-            className={`w-full ${hideSidebar ? "lg:col-span-2" : ""}`}
+            className={`w-full lg:order-1 ${hideSidebar ? "lg:col-span-2" : ""}`}
           >
             {children}
           </motion.div>

@@ -73,15 +73,15 @@ function Index() {
               >
                 All India Car Dealers Association
               </motion.h1>
-              <motion.p
+              {/* <motion.p
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.15 }}
                 className="mt-3 text-sm sm:text-base font-semibold uppercase tracking-[0.2em] opacity-80"
               >
                 — Est. Serving Car Dealers Across India —
-              </motion.p>
-              <motion.p
+              </motion.p> */}
+              {/* <motion.p
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.25 }}
@@ -90,7 +90,7 @@ function Index() {
                 Uniting India's automobile dealers under a single professional banner — advancing
                 fair trade, transparent transfers and modern retail standards from Kashmir to
                 Kanyakumari.
-              </motion.p>
+              </motion.p> */}
               <motion.div
                 initial={false}
                 animate={{ opacity: 1, y: 0 }}
@@ -135,9 +135,9 @@ function Index() {
       </section>
 
       <main className="mx-auto max-w-7xl w-full px-4 py-16 flex-1">
-        <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
-          <Sidebar />
-          <div className="space-y-10">
+        <div className="grid gap-8 lg:grid-cols-[1fr_16rem]">
+          <Sidebar className="lg:order-2" />
+          <div className="space-y-10 lg:order-1">
             <motion.div
               initial={false}
               whileInView={{ opacity: 1, y: 0 }}

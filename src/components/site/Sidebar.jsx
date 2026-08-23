@@ -2,9 +2,9 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { categoryNav } from "./nav-data";
 
-export function Sidebar() {
+export function Sidebar({ className = "" }) {
   return (
-    <aside className="w-full lg:w-64 shrink-0">
+    <aside className={`w-full lg:w-64 shrink-0 ${className}`}>
       <div className="rounded-lg overflow-hidden border border-border bg-card shadow-[var(--shadow-card)]">
         <div
           className="bg-primary text-primary-foreground px-4 py-3 font-bold text-lg tracking-wide"

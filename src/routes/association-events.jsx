@@ -113,7 +113,7 @@ function Page() {
               <img
                 src={event.imageUrl}
                 alt={event.title}
-                className="aspect-[3/4] h-55 w-full object-fill transition-transform duration-300 group-hover:scale-105"
+                className="aspect-[3/4] h-55 w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
               />
 
               <span className="absolute inset-x-0 bottom-0 bg-black/70 text-white text-xs sm:text-sm font-semibold px-3 py-2 text-center">
@@ -155,7 +155,7 @@ function Page() {
               <img
                 src={current.imageUrl}
                 alt={current.title}
-                className="max-h-[80vh] w-full object-fill bg-black"
+                className="max-h-[80vh] w-full object-contain bg-black"
               />
 
               {filteredEvents.length > 1 && (
