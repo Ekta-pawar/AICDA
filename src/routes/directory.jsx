@@ -168,7 +168,7 @@ function Page() {
               <img
                 src={current.imageUrl}
                 alt={current.title}
-                className="max-h-[80vh] w-full object-contain bg-black"
+                className="max-h-[80vh] w-full object-cover sm:object-contain bg-black"
               />
 
               {filteredImages.length > 1 && (

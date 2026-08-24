@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   BookUser,
+  CalendarDays,
   ChevronRight,
   GalleryHorizontal,
   Image,
@@ -30,6 +31,7 @@ const navigation = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/admin" },
   { label: "Banner Master", icon: GalleryHorizontal, to: "/admin/banners" },
   { label: "Manage Directory", icon: BookUser, to: "/admin/directory" },
+  { label: "Important Dates", icon: CalendarDays, to: "/admin/important-dates" },
   { label: "Reset Directory", icon: RotateCcw, to: "/admin/reset-directory" },
   // { label: "Reset Management", icon: RotateCw, to: "/admin/reset-management" },
   { label: "Image", icon: Image, to: "/admin/image" },

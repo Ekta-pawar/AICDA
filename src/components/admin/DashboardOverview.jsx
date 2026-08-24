@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
+  Cake,
+  CalendarDays,
   ChevronRight,
   Clock,
   Handshake,
@@ -14,7 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getMembers } from "@/lib/member-api";
 import { getPartners } from "@/lib/partner-api";
 import { getEnquiries } from "@/lib/enquiry-api";
+import { getImportantDates, getUpcomingBirthdays } from "@/lib/important-date-api";
 import { isExpired, isProfileIncomplete, isWithinDays } from "./directory-shared";
+
+const UPCOMING_LIMIT = 5;
 
 const LARGE_BATCH = 1000;
 const DASHBOARD_EXPIRING_DAYS = 10;
@@ -91,6 +96,12 @@ function ActivitySkeleton() {
   );
 }
 
+function daysLeftLabel(daysLeft) {
+  if (daysLeft === 0) return "Today";
+  if (daysLeft === 1) return "Tomorrow";
+  return `In ${daysLeft} days`;
+}
+
 const QUICK_ACTIONS = [
   { label: "Add a member", to: "/admin/directory/create" },
   { label: "Upload gallery images", to: "/admin/image" },
@@ -100,6 +111,8 @@ const QUICK_ACTIONS = [
 export function DashboardOverview() {
   const [stats, setStats] = useState(null);
   const [recentEnquiries, setRecentEnquiries] = useState([]);
+  const [upcomingDates, setUpcomingDates] = useState([]);
+  const [upcomingBirthdays, setUpcomingBirthdays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -111,13 +124,28 @@ export function DashboardOverview() {
       getMembers({ limit: LARGE_BATCH }),
       getPartners({ limit: LARGE_BATCH }),
       getEnquiries(),
+      getImportantDates(),
+      getUpcomingBirthdays(),
     ])
-      .then(([membersResult, partners, enquiriesResult]) => {
+      .then(([membersResult, partners, enquiriesResult, importantDates, birthdays]) => {
         if (!mounted) return;
         const enquiries = [...enquiriesResult.enquiries].sort(
           (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
         );
         const members = membersResult.members;
+
+        const todayOnly = new Date();
+        todayOnly.setHours(0, 0, 0, 0);
+        const upcoming = importantDates
+          .map((entry) => ({
+            ...entry,
+            daysLeft: Math.round((new Date(entry.date) - todayOnly) / (1000 * 60 * 60 * 24)),
+          }))
+          .filter((entry) => entry.daysLeft >= 0)
+          .sort((a, b) => a.daysLeft - b.daysLeft);
+
+        setUpcomingDates(upcoming.slice(0, UPCOMING_LIMIT));
+        setUpcomingBirthdays(birthdays.slice(0, UPCOMING_LIMIT));
         // Active/Inactive totals come straight from the server (same field
         // DirectoryManagement.jsx uses) — everything else has no backend
         // filter, so it's counted from the fetched batch instead.
@@ -239,6 +267,94 @@ export function DashboardOverview() {
             />
           )}
         </div> */}
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-slate-500">
+              <CalendarDays className="h-4 w-4 text-sky-600" />
+              Upcoming Important Dates
+            </h3>
+            <Link
+              to="/admin/important-dates"
+              className="text-[13px] font-semibold text-sky-700 transition-colors hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          {loading ? (
+            <div className="mt-1 divide-y divide-slate-100">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ActivitySkeleton key={index} />
+              ))}
+            </div>
+          ) : upcomingDates.length === 0 ? (
+            <p className="py-10 text-center text-[13px] text-slate-500">No upcoming dates.</p>
+          ) : (
+            <div className="mt-1 divide-y divide-slate-100">
+              {upcomingDates.map((entry) => (
+                <div key={entry.id} className="flex items-center gap-3 py-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-600">
+                    <CalendarDays className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-medium">{entry.title}</p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-sky-700">
+                    {daysLeftLabel(entry.daysLeft)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wide text-slate-500">
+              <Cake className="h-4 w-4 text-pink-600" />
+              Upcoming Birthdays
+            </h3>
+          </div>
+          {loading ? (
+            <div className="mt-1 divide-y divide-slate-100">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <ActivitySkeleton key={index} />
+              ))}
+            </div>
+          ) : upcomingBirthdays.length === 0 ? (
+            <p className="py-10 text-center text-[13px] text-slate-500">No birthdays this week.</p>
+          ) : (
+            <div className="mt-1 divide-y divide-slate-100">
+              {upcomingBirthdays.map((member) => (
+                <div key={member.id} className="flex items-center gap-3 py-3">
+                  {member.photo ? (
+                    <img
+                      src={member.photo}
+                      alt={member.memberName}
+                      className="h-9 w-9 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-50 text-sm font-bold text-pink-600">
+                      {(member.memberName || "?").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13px] font-medium">{member.memberName}</p>
+                    <p className="mt-0.5 truncate text-xs text-slate-500">Member #{member.memberId}</p>
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-pink-600">
+                    {daysLeftLabel(member.daysLeft)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-3 lg:grid-cols-3">

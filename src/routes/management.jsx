@@ -229,7 +229,7 @@ function OfficeBearerSlide({ bearer }) {
 
   return (
     <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-[220px_1fr]">
-      <div className="flex h-45 w-full items-start justify-center overflow-hidden rounded-lg">
+      <div className="flex h-72 w-full items-start justify-center overflow-hidden rounded-lg sm:h-45">
         {bearer.photo ? (
           <img
             src={bearer.photo}

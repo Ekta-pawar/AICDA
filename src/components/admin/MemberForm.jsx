@@ -22,6 +22,7 @@ function buildInitialForm(member) {
       memberId: "",
       memberName: "",
       fatherName: "",
+      dateOfBirth: "",
       photo: null,
       residentialAddress: "",
       mobile: "",
@@ -47,6 +48,7 @@ function buildInitialForm(member) {
     memberId: member.memberId != null ? String(member.memberId) : "",
     memberName: member.memberName || "",
     fatherName: member.fatherName || "",
+    dateOfBirth: member.dateOfBirth ? member.dateOfBirth.slice(0, 10) : "",
     photo: null,
     residentialAddress: member.residentialAddress || "",
     mobile: member.mobile || "",
@@ -345,13 +347,24 @@ export function MemberForm({ member, onCancel, onSaved }) {
             </FieldRow>
           </div>
         </div>
-        <FieldRow label="Packet No.">
-          <input
-            value={form.packetNo}
-            onChange={(e) => updateField("packetNo", e.target.value)}
-            className={inputClass}
-          />
-        </FieldRow>
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          <FieldRow label="Packet No.">
+            <input
+              value={form.packetNo}
+              onChange={(e) => updateField("packetNo", e.target.value)}
+              maxLength={10}
+              className={inputClass}
+            />
+          </FieldRow>
+          <FieldRow label="Birth Day">
+            <input
+              type="date"
+              value={form.dateOfBirth}
+              onChange={(e) => updateField("dateOfBirth", e.target.value)}
+              className={inputClass}
+            />
+          </FieldRow>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-[3px]">

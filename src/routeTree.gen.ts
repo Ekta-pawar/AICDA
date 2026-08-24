@@ -44,6 +44,7 @@ import { Route as AdminResetManagementRouteImport } from './routes/admin.reset-m
 import { Route as AdminResetDirectoryRouteImport } from './routes/admin.reset-directory'
 import { Route as AdminOurStaffRouteImport } from './routes/admin.our-staff'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminImportantDatesRouteImport } from './routes/admin.important-dates'
 import { Route as AdminImageRouteImport } from './routes/admin.image'
 import { Route as AdminExpiredMembersRouteImport } from './routes/admin.expired-members'
 import { Route as AdminEnquiriesRouteImport } from './routes/admin.enquiries'
@@ -238,6 +239,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminImportantDatesRoute = AdminImportantDatesRouteImport.update({
+  id: '/important-dates',
+  path: '/important-dates',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminImageRoute = AdminImageRouteImport.update({
   id: '/image',
   path: '/image',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/expired-members': typeof AdminExpiredMembersRoute
   '/admin/image': typeof AdminImageRoute
+  '/admin/important-dates': typeof AdminImportantDatesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/our-staff': typeof AdminOurStaffRoute
   '/admin/reset-directory': typeof AdminResetDirectoryRoute
@@ -360,6 +367,7 @@ export interface FileRoutesByTo {
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/expired-members': typeof AdminExpiredMembersRoute
   '/admin/image': typeof AdminImageRoute
+  '/admin/important-dates': typeof AdminImportantDatesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/our-staff': typeof AdminOurStaffRoute
   '/admin/reset-directory': typeof AdminResetDirectoryRoute
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/admin/enquiries': typeof AdminEnquiriesRoute
   '/admin/expired-members': typeof AdminExpiredMembersRoute
   '/admin/image': typeof AdminImageRoute
+  '/admin/important-dates': typeof AdminImportantDatesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/our-staff': typeof AdminOurStaffRoute
   '/admin/reset-directory': typeof AdminResetDirectoryRoute
@@ -459,6 +468,7 @@ export interface FileRouteTypes {
     | '/admin/enquiries'
     | '/admin/expired-members'
     | '/admin/image'
+    | '/admin/important-dates'
     | '/admin/login'
     | '/admin/our-staff'
     | '/admin/reset-directory'
@@ -505,6 +515,7 @@ export interface FileRouteTypes {
     | '/admin/enquiries'
     | '/admin/expired-members'
     | '/admin/image'
+    | '/admin/important-dates'
     | '/admin/login'
     | '/admin/our-staff'
     | '/admin/reset-directory'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/admin/enquiries'
     | '/admin/expired-members'
     | '/admin/image'
+    | '/admin/important-dates'
     | '/admin/login'
     | '/admin/our-staff'
     | '/admin/reset-directory'
@@ -863,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/important-dates': {
+      id: '/admin/important-dates'
+      path: '/important-dates'
+      fullPath: '/admin/important-dates'
+      preLoaderRoute: typeof AdminImportantDatesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/image': {
       id: '/admin/image'
       path: '/image'
@@ -970,6 +989,7 @@ interface AdminRouteChildren {
   AdminEnquiriesRoute: typeof AdminEnquiriesRoute
   AdminExpiredMembersRoute: typeof AdminExpiredMembersRoute
   AdminImageRoute: typeof AdminImageRoute
+  AdminImportantDatesRoute: typeof AdminImportantDatesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOurStaffRoute: typeof AdminOurStaffRoute
   AdminResetDirectoryRoute: typeof AdminResetDirectoryRoute
@@ -985,6 +1005,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEnquiriesRoute: AdminEnquiriesRoute,
   AdminExpiredMembersRoute: AdminExpiredMembersRoute,
   AdminImageRoute: AdminImageRoute,
+  AdminImportantDatesRoute: AdminImportantDatesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminOurStaffRoute: AdminOurStaffRoute,
   AdminResetDirectoryRoute: AdminResetDirectoryRoute,

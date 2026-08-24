@@ -6,6 +6,7 @@ function buildMemberFormData(member) {
     memberId: member.memberId,
     memberName: member.memberName,
     fatherName: member.fatherName,
+    dateOfBirth: member.dateOfBirth,
     residentialAddress: member.residentialAddress,
     mobile: member.mobile,
     residentialTelephone: member.residentialTelephone,
