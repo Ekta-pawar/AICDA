@@ -206,10 +206,16 @@ function Page() {
                 </p>
               )}
 
-              <Button type="submit" disabled={submitting} className="h-11 w-full sm:w-auto">
-                {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                Submit Request
-              </Button>
+             <div className="flex justify-center">
+  <Button
+    type="submit"
+    disabled={submitting}
+    className="h-11 w-full sm:w-auto"
+  >
+    {submitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+    Submit Request
+  </Button>
+</div>
             </form>
           </>
         )}

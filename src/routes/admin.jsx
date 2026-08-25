@@ -19,7 +19,7 @@ import {
   UserCog,
   X,
 } from "lucide-react";
-import aicdaLogo from "@/assets/logoAICDA.png";
+import aicdaLogo from "@/assets/Aicda logo.png";
 import { getCurrentUser, logout } from "@/lib/auth-api";
 import { ChangePasswordModal } from "@/components/admin/ChangePasswordModal";
 
