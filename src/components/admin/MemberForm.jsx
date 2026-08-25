@@ -157,10 +157,11 @@ export function MemberForm({ member, onCancel, onSaved }) {
     } catch (requestError) {
       const message = requestError.message || "Could not save member.";
       setError(message);
-      // Backend returns "Member ID already exists..." for a duplicate — flag
-      // that specific field instead of just the generic banner.
-      if (/member id/i.test(message)) setFieldErrors({ memberId: message });
-      toast.error(message);
+      // Backend returns '...Member ID... is already in use...' for a
+      // duplicate — flag that specific field instead of just the generic
+      // banner, so the input itself shows red alongside the toast.
+      if (/member id.*already in use/i.test(message)) setFieldErrors({ memberId: message });
+      toast.error(message, { duration: 6000 });
     } finally {
       setSaving(false);
     }

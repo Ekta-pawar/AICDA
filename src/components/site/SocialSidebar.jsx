@@ -18,7 +18,7 @@ const SOCIAL_LINKS = [
   },
   {
     icon: Twitter,
-    href: "https://x.com/jsnayol?t=kpZp7oAjFZN6ZXUwSHQ56g&s=08",
+    href: "https://x.com/jsnayol",
     label: "Twitter",
     bg: "#1DA1F2",
   },
